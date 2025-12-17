@@ -1,22 +1,22 @@
-const API_URL = 'http://localhost:8080/api/usuarios';
+import axiosClient from '../api/axiosClient';
 
 export const obtenerUsuarios = async () => {
-    const response = await fetch(API_URL);
-    if (!response.ok) throw new Error('Error al cargar usuarios');
-    return response.json();
+    try {
+        const response = await axiosClient.get('/usuarios');
+        return response.data;
+    } catch (error: any) {
+        throw new Error('Error al cargar usuarios');
+    }
 };
 
 export const crearUsuario = async (usuario: any) => {
-    const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(usuario),
-    });
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Error al crear usuario');
+    try {
+        const response = await axiosClient.post('/usuarios', usuario);
+        return response.data;
+    } catch (error: any) {
+        const message = error.response?.data?.message || error.response?.data || 'Error al crear usuario';
+        throw new Error(message);
     }
-    return response.json();
 };
 
 // Roles hardcoded for MVP as per plan or fetched if backend endpoint exists

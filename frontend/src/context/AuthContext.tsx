@@ -42,6 +42,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const login = (userData: User) => {
         setUser(userData);
         localStorage.setItem('pos_user', JSON.stringify(userData));
+        if (userData.token) {
+            localStorage.setItem('token', userData.token);
+        }
         toast.success(`Bienvenido, ${userData.nombreCompleto}`);
         navigate('/');
     };
@@ -49,6 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const logout = () => {
         setUser(null);
         localStorage.removeItem('pos_user');
+        localStorage.removeItem('token');
         navigate('/login');
         toast.success('Sesión cerrada correctamente');
     };

@@ -69,16 +69,24 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public Optional<Usuario> login(LoginDTO loginDTO) {
+        System.out.println("Intentando login para usuario: " + loginDTO.getUsername());
         Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(loginDTO.getUsername());
 
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
-            if (passwordEncoder.matches(loginDTO.getPassword(), usuario.getPasswordHash())) {
+            System.out.println("Usuario encontrado en BD. Comparando contraseñas...");
+            boolean matches = passwordEncoder.matches(loginDTO.getPassword(), usuario.getPasswordHash());
+            System.out.println("¿Contraseña coincide?: " + matches);
+
+            if (matches) {
                 if (!usuario.getActivo()) {
+                    System.out.println("Usuario inactivo");
                     throw new RuntimeException("Usuario inactivo");
                 }
                 return Optional.of(usuario);
             }
+        } else {
+            System.out.println("Usuario NO encontrado en BD");
         }
         return Optional.empty();
     }

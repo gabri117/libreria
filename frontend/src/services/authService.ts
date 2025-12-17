@@ -1,18 +1,11 @@
-const API_URL = 'http://localhost:8080/api/auth';
+import axiosClient from '../api/axiosClient';
 
 export const loginUsuario = async (credentials: { username: string; password: string }) => {
-    const response = await fetch(`${API_URL}/login`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-    });
-
-    if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || 'Error al iniciar sesión');
+    try {
+        const response = await axiosClient.post('/auth/login', credentials);
+        return response.data;
+    } catch (error: any) {
+        const message = error.response?.data?.message || error.response?.data || 'Error al iniciar sesión';
+        throw new Error(message);
     }
-
-    return response.json();
 };

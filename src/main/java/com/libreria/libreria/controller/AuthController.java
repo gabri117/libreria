@@ -3,43 +3,47 @@ package com.libreria.libreria.controller;
 import com.libreria.libreria.dto.AuthResponseDTO;
 import com.libreria.libreria.dto.LoginDTO;
 import com.libreria.libreria.model.Usuario;
-import com.libreria.libreria.service.UsuarioService;
-import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import com.libreria.libreria.security.JwtService;
 
-import java.util.Optional;
+import jakarta.validation.Valid;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
 public class AuthController {
 
-    @Autowired
-    private UsuarioService usuarioService;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
+
+    public AuthController(AuthenticationManager authenticationManager, JwtService jwtService) {
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
+    }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody LoginDTO loginDTO) {
-        try {
-            Optional<Usuario> usuarioOpt = usuarioService.login(loginDTO);
+    public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody LoginDTO loginDTO) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginDTO.getUsername(),
+                        loginDTO.getPassword()));
 
-            if (usuarioOpt.isPresent()) {
-                Usuario usuario = usuarioOpt.get();
-                AuthResponseDTO response = AuthResponseDTO.builder()
-                        .usuarioId(usuario.getUsuarioId())
-                        .username(usuario.getUsername())
-                        .nombreCompleto(usuario.getNombreCompleto())
-                        .rol(usuario.getRol().getNombre())
-                        .token("dummy-token-for-mvp") // In real app, generate JWT here
-                        .build();
-                return ResponseEntity.ok(response);
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
-            }
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        }
+        Usuario usuario = (Usuario) authentication.getPrincipal();
+        String jwtToken = jwtService.generateToken(usuario);
+
+        AuthResponseDTO response = AuthResponseDTO.builder()
+                .usuarioId(usuario.getUsuarioId())
+                .username(usuario.getUsername())
+                .nombreCompleto(usuario.getNombreCompleto())
+                .rol(usuario.getRol().getNombre())
+                .token(jwtToken)
+                .build();
+
+        return ResponseEntity.ok(response);
     }
 }
