@@ -22,7 +22,7 @@ public class VentaController {
 
     @PostMapping
     public ResponseEntity<VentaDTO> registrarVenta(@Valid @RequestBody VentaDTO ventaDTO) {
-        VentaDTO nuevaVenta = ventaService.registrarVenta(ventaDTO);
+        VentaDTO nuevaVenta = ventaService.crearVenta(ventaDTO);
         return new ResponseEntity<>(nuevaVenta, HttpStatus.CREATED);
     }
 }
