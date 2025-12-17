@@ -24,9 +24,9 @@ export const DashboardPage = () => {
 
     const stats = useMemo(() => {
         const today = new Date().toISOString().split('T')[0];
-        const ventasHoy = ventas.filter(v => v.fechaVenta.startsWith(today));
+        const ventasHoy = ventas.filter(v => (v.fechaVenta || '').startsWith(today));
 
-        const totalHoy = ventasHoy.reduce((acc, v) => acc + v.montoTotal, 0);
+        const totalHoy = ventasHoy.reduce((acc, v) => acc + (v.montoTotal || 0), 0);
         const transacciones = ventasHoy.length;
         const promedio = transacciones > 0 ? totalHoy / transacciones : 0;
 
@@ -38,10 +38,10 @@ export const DashboardPage = () => {
         });
 
         const chartData = last7Days.map(date => {
-            const salesInDate = ventas.filter(v => v.fechaVenta.startsWith(date));
+            const salesInDate = ventas.filter(v => (v.fechaVenta || '').startsWith(date));
             return {
                 date,
-                total: salesInDate.reduce((acc, v) => acc + v.montoTotal, 0)
+                total: salesInDate.reduce((acc, v) => acc + (v.montoTotal || 0), 0)
             };
         });
 
@@ -65,7 +65,7 @@ export const DashboardPage = () => {
                     </div>
                     <div>
                         <p className="text-sm text-gray-500 font-medium">Ventas Hoy</p>
-                        <h3 className="text-2xl font-bold text-gray-900">${stats.totalHoy.toFixed(2)}</h3>
+                        <h3 className="text-2xl font-bold text-gray-900">Q{stats.totalHoy.toFixed(2)}</h3>
                     </div>
                 </div>
 
@@ -74,7 +74,7 @@ export const DashboardPage = () => {
                         <ShoppingBag size={24} />
                     </div>
                     <div>
-                        <p className="text-sm text-gray-500 font-medium">Transacciones</p>
+                        <p className="text-sm text-gray-500 font-medium">Ventas Realizadas</p>
                         <h3 className="text-2xl font-bold text-gray-900">{stats.transacciones}</h3>
                     </div>
                 </div>
@@ -84,8 +84,8 @@ export const DashboardPage = () => {
                         <TrendingUp size={24} />
                     </div>
                     <div>
-                        <p className="text-sm text-gray-500 font-medium">Ticket Promedio</p>
-                        <h3 className="text-2xl font-bold text-gray-900">${stats.promedio.toFixed(2)}</h3>
+                        <p className="text-sm text-gray-500 font-medium">Promedio por Venta</p>
+                        <h3 className="text-2xl font-bold text-gray-900">Q{stats.promedio.toFixed(2)}</h3>
                     </div>
                 </div>
             </div>
@@ -111,7 +111,7 @@ export const DashboardPage = () => {
                                             style={{ height: `${heightPercentage}%` }}
                                         >
                                             <div className="opacity-0 group-hover:opacity-100 absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs py-1 px-2 rounded pointer-events-none transition-opacity">
-                                                ${d.total.toFixed(0)}
+                                                Q{d.total.toFixed(0)}
                                             </div>
                                         </div>
                                     </div>
@@ -126,19 +126,19 @@ export const DashboardPage = () => {
 
                 {/* Recent Transactions List */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <h3 className="text-lg font-bold text-gray-800 mb-6">Ventas Recientes</h3>
+                    <h3 className="text-lg font-bold text-gray-800 mb-6">Últimas Ventas</h3>
                     <div className="space-y-4">
                         {ventas.slice(0, 5).map(venta => ( // Show last 5
                             <div key={venta.ventaId} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-xl transition-colors border border-transparent hover:border-gray-100">
                                 <div>
-                                    <p className="text-sm font-bold text-gray-900">{venta.clienteNombre || 'Cliente Casual'}</p>
+                                    <p className="text-sm font-bold text-gray-900">{venta.clienteNombre || 'Consumidor Final'}</p>
                                     <p className="text-xs text-gray-500">
-                                        {new Date(venta.fechaVenta).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • ID #{venta.ventaId}
+                                        {venta.fechaVenta ? new Date(venta.fechaVenta).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'} • Factura #{venta.ventaId || 0}
                                     </p>
                                 </div>
                                 <div className="text-right">
                                     <span className="block text-sm font-bold text-emerald-600">
-                                        +${venta.montoTotal.toFixed(2)}
+                                        +Q{(venta.montoTotal || 0).toFixed(2)}
                                     </span>
                                     <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{venta.metodoPago}</span>
                                 </div>

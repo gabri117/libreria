@@ -1,16 +1,31 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, Package, LogOut, BookOpen, Users, TrendingUp } from 'lucide-react';
+import { ShoppingCart, Package, LogOut, BookOpen, Users, TrendingUp, Shield } from 'lucide-react';
 import { useSession } from '../context/SessionContext';
+import { useAuth } from '../context/AuthContext';
 import { StatusBadge } from './CashControl/StatusBadge';
 import { ClosingModal } from './CashControl/ClosingModal';
 
 export default function Navbar() {
     const location = useLocation();
-    const { sesionActiva, cerrarSesion } = useSession(); // Get session state
+    const { sesionActiva, cerrarSesion, verificarSesion } = useSession();
+    const { user, logout } = useAuth();
     const [isClosingModalOpen, setIsClosingModalOpen] = useState(false);
 
     const isActive = (path: string) => location.pathname === path;
+
+    const handleLogoutClick = async () => {
+        if (sesionActiva) {
+            // If session is active, ask to close it first
+            await verificarSesion();
+            setIsClosingModalOpen(true);
+        } else {
+            // Just logout
+            logout();
+        }
+    };
+
+    const isAdmin = user?.rol === 'Administrador';
 
     return (
         <header className="bg-gray-900 border-b border-gray-800 text-white shadow-lg z-50 sticky top-0">
@@ -31,10 +46,7 @@ export default function Navbar() {
                             to="/"
                             className={`
                                 flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
-                                ${isActive('/')
-                                    ? 'bg-gray-800 text-white ring-1 ring-gray-700'
-                                    : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-                                }
+                                ${isActive('/') ? 'bg-gray-800 text-white ring-1 ring-gray-700' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
                             `}
                         >
                             <TrendingUp className="h-4 w-4" />
@@ -45,10 +57,7 @@ export default function Navbar() {
                             to="/pos"
                             className={`
                                 flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
-                                ${isActive('/pos')
-                                    ? 'bg-gray-800 text-white ring-1 ring-gray-700'
-                                    : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-                                }
+                                ${isActive('/pos') ? 'bg-gray-800 text-white ring-1 ring-gray-700' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
                             `}
                         >
                             <ShoppingCart className="h-4 w-4" />
@@ -56,77 +65,96 @@ export default function Navbar() {
                         </Link>
 
                         <Link
-                            to="/inventario"
-                            className={`
-                                flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
-                                ${isActive('/inventario')
-                                    ? 'bg-gray-800 text-white ring-1 ring-gray-700'
-                                    : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-                                }
-                            `}
-                        >
-                            <Package className="h-4 w-4" />
-                            Inventario
-                        </Link>
-
-                        <Link
-                            to="/catalogos"
-                            className={`
-                                flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
-                                ${isActive('/catalogos')
-                                    ? 'bg-gray-800 text-white ring-1 ring-gray-700'
-                                    : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-                                }
-                            `}
-                        >
-                            <BookOpen className="h-4 w-4" />
-                            Catálogos
-                        </Link>
-
-                        <Link
                             to="/clientes"
                             className={`
                                 flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
-                                ${isActive('/clientes')
-                                    ? 'bg-gray-800 text-white ring-1 ring-gray-700'
-                                    : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
-                                }
+                                ${isActive('/clientes') ? 'bg-gray-800 text-white ring-1 ring-gray-700' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
                             `}
                         >
                             <Users className="h-4 w-4" />
                             Clientes
                         </Link>
+
+                        {/* Admin Only Links */}
+                        {isAdmin && (
+                            <>
+                                <Link
+                                    to="/inventario"
+                                    className={`
+                                        flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
+                                        ${isActive('/inventario') ? 'bg-gray-800 text-white ring-1 ring-gray-700' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
+                                    `}
+                                >
+                                    <Package className="h-4 w-4" />
+                                    Inventario
+                                </Link>
+
+                                <Link
+                                    to="/catalogos"
+                                    className={`
+                                        flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
+                                        ${isActive('/catalogos') ? 'bg-gray-800 text-white ring-1 ring-gray-700' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
+                                    `}
+                                >
+                                    <BookOpen className="h-4 w-4" />
+                                    Catálogos
+                                </Link>
+
+                                <Link
+                                    to="/usuarios"
+                                    className={`
+                                        flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
+                                        ${isActive('/usuarios') ? 'bg-gray-800 text-white ring-1 ring-gray-700' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
+                                    `}
+                                >
+                                    <Shield className="h-4 w-4" />
+                                    Usuarios
+                                </Link>
+                            </>
+                        )}
                     </nav>
 
-                    {/* Logout Button (Visual only) */}
-                    {/* Logout / Close Box Button */}
-                    <button
-                        onClick={() => {
-                            if (sesionActiva) setIsClosingModalOpen(true);
-                        }}
-                        className={`
-                            flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
-                            ${sesionActiva
-                                ? 'text-gray-400 hover:text-red-400 hover:bg-red-500/10'
-                                : 'text-gray-600 cursor-not-allowed opacity-50'}
-                        `}
-                        title={sesionActiva ? "Cerrar Caja" : "Caja ya cerrada"}
-                    >
-                        <LogOut className="h-4 w-4" />
-                        <span>{sesionActiva ? 'Cerrar Caja' : 'Salir'}</span>
-                    </button>
+                    {/* Right Side: Logout and Session Badge */}
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={handleLogoutClick}
+                            className={`
+                                flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                                ${sesionActiva
+                                    ? 'text-gray-400 hover:text-red-400 hover:bg-red-500/10'
+                                    : 'text-gray-400 hover:text-white hover:bg-gray-800'}
+                            `}
+                            title={sesionActiva ? "Cerrar Caja para Salir" : "Cerrar Sesión"}
+                        >
+                            <LogOut className="h-4 w-4" />
+                            <span>{sesionActiva ? 'Cerrar Caja' : 'Salir'}</span>
+                        </button>
 
-                    <div className="ml-4 pl-4 border-l border-gray-700">
-                        <StatusBadge sesion={sesionActiva} />
+                        <div className="pl-4 border-l border-gray-700">
+                            <StatusBadge sesion={sesionActiva} />
+                        </div>
+
+                        {/* User Info Badge */}
+                        <div className="flex items-center gap-2 text-xs text-gray-400">
+                            <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold">
+                                {user?.nombreCompleto?.charAt(0) || 'U'}
+                            </div>
+                            <div className="hidden lg:block">
+                                <p className="text-white font-medium">{user?.nombreCompleto}</p>
+                                <p>{user?.rol}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <ClosingModal
                 isOpen={isClosingModalOpen}
+                sesion={sesionActiva}
                 onCloseSesion={async (monto) => {
                     await cerrarSesion(monto);
                     setIsClosingModalOpen(false);
+                    logout(); // Auto logout after closing session
                 }}
                 onCancel={() => setIsClosingModalOpen(false)}
             />

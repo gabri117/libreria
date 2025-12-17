@@ -30,7 +30,7 @@ import {
     eliminarProveedor
 } from '../services/proveedorService';
 
-import type { Categoria, Ubicacion, Proveedor, ProveedorFormData } from '../types';
+import type { Categoria, Ubicacion, Proveedor } from '../types';
 
 type CatalogType = 'categorias' | 'ubicaciones' | 'proveedores';
 
@@ -111,8 +111,8 @@ export default function CatalogsPage() {
                 <button
                     onClick={() => setActiveTab('categorias')}
                     className={`flex items-center gap-2 border-b-2 px-6 py-4 text-sm font-bold transition-all ${activeTab === 'categorias'
-                            ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                        ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                         }`}
                 >
                     <Tags className="h-4 w-4" />
@@ -121,8 +121,8 @@ export default function CatalogsPage() {
                 <button
                     onClick={() => setActiveTab('ubicaciones')}
                     className={`flex items-center gap-2 border-b-2 px-6 py-4 text-sm font-bold transition-all ${activeTab === 'ubicaciones'
-                            ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                        ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                         }`}
                 >
                     <MapPin className="h-4 w-4" />
@@ -131,8 +131,8 @@ export default function CatalogsPage() {
                 <button
                     onClick={() => setActiveTab('proveedores')}
                     className={`flex items-center gap-2 border-b-2 px-6 py-4 text-sm font-bold transition-all ${activeTab === 'proveedores'
-                            ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
-                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                        ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                         }`}
                 >
                     <Truck className="h-4 w-4" />
@@ -250,7 +250,6 @@ export default function CatalogsPage() {
             {isModalOpen && (
                 <CatalogModal
                     type={activeTab}
-                    isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     onSave={loadData}
                     item={editingItem}
@@ -261,7 +260,7 @@ export default function CatalogsPage() {
 }
 
 // Inline Modal Component for simplicity in this artifact
-function CatalogModal({ type, isOpen, onClose, onSave, item }: any) {
+function CatalogModal({ type, onClose, onSave, item }: any) {
     const [formData, setFormData] = useState<any>(
         item || (type === 'categorias' ? { nombre: '', descripcion: '' } :
             type === 'ubicaciones' ? { nombreCorto: '', descripcion: '' } :

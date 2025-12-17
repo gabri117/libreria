@@ -1,7 +1,7 @@
 package com.libreria.libreria.service.impl;
 
-import com.libreria.libreria.dto.LoginRequestDTO;
-import com.libreria.libreria.dto.UsuarioCreateDTO;
+import com.libreria.libreria.dto.CreateUsuarioDTO;
+import com.libreria.libreria.dto.LoginDTO;
 import com.libreria.libreria.dto.UsuarioDTO;
 import com.libreria.libreria.model.Rol;
 import com.libreria.libreria.model.Usuario;
@@ -13,6 +13,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
 
@@ -21,8 +25,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UsuarioServiceImpl(UsuarioRepository usuarioRepository,
-            RolRepository rolRepository,
+    public UsuarioServiceImpl(UsuarioRepository usuarioRepository, RolRepository rolRepository,
             PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
@@ -30,46 +33,54 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    @Transactional
-    public UsuarioDTO registrarUsuario(UsuarioCreateDTO dto) {
-        Rol rol = rolRepository.findById(dto.getRolId())
-                .orElseThrow(() -> new RuntimeException("Rol no encontrado ID: " + dto.getRolId()));
-
-        if (usuarioRepository.findByUsername(dto.getUsername()).isPresent()) {
-            throw new RuntimeException("El username '" + dto.getUsername() + "' ya está en uso.");
-        }
-
-        // ENCRIPTACIÓN AQUÍ
-        String hashedPassword = passwordEncoder.encode(dto.getPassword());
-
-        Usuario usuario = Usuario.builder()
-                .rol(rol)
-                .nombreCompleto(dto.getNombreCompleto())
-                .username(dto.getUsername())
-                .passwordHash(hashedPassword) // Guardamos el HASH, no la password plana
-                .activo(true)
-                .build();
-
-        Usuario saved = usuarioRepository.save(usuario);
-        return mapToDTO(saved);
+    public List<UsuarioDTO> obtenerUsuarios() {
+        return usuarioRepository.findAll().stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public UsuarioDTO login(LoginRequestDTO loginRequestDTO) {
-        Usuario usuario = usuarioRepository.findByUsername(loginRequestDTO.getUsername())
-                .orElseThrow(() -> new RuntimeException("Credenciales inválidas")); // Mensaje genérico por seguridad
+    public UsuarioDTO obtenerUsuarioPorId(Integer id) {
+        return usuarioRepository.findById(id)
+                .map(this::mapToDTO)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    }
 
-        // COMPARACIÓN DE HASH AQUÍ
-        if (!passwordEncoder.matches(loginRequestDTO.getPassword(), usuario.getPasswordHash())) {
-            throw new RuntimeException("Credenciales inválidas");
+    @Override
+    @Transactional
+    public UsuarioDTO crearUsuario(CreateUsuarioDTO dto) {
+        if (usuarioRepository.findByUsername(dto.getUsername()).isPresent()) {
+            throw new RuntimeException("El nombre de usuario ya existe");
         }
 
-        if (!Boolean.TRUE.equals(usuario.getActivo())) {
-            throw new RuntimeException("Usuario inactivo");
-        }
+        Rol rol = rolRepository.findById(dto.getRolId())
+                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
 
-        return mapToDTO(usuario);
+        Usuario usuario = Usuario.builder()
+                .nombreCompleto(dto.getNombreCompleto())
+                .username(dto.getUsername())
+                .passwordHash(passwordEncoder.encode(dto.getPassword()))
+                .rol(rol)
+                .activo(true)
+                .build();
+
+        return mapToDTO(usuarioRepository.save(usuario));
+    }
+
+    @Override
+    public Optional<Usuario> login(LoginDTO loginDTO) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(loginDTO.getUsername());
+
+        if (usuarioOpt.isPresent()) {
+            Usuario usuario = usuarioOpt.get();
+            if (passwordEncoder.matches(loginDTO.getPassword(), usuario.getPasswordHash())) {
+                if (!usuario.getActivo()) {
+                    throw new RuntimeException("Usuario inactivo");
+                }
+                return Optional.of(usuario);
+            }
+        }
+        return Optional.empty();
     }
 
     private UsuarioDTO mapToDTO(Usuario usuario) {

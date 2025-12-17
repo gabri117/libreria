@@ -40,7 +40,7 @@ export const ClientSelector = () => {
                     }}
                     disabled={loading}
                 >
-                    <option value="">-- Cliente Público (Precio Base) --</option>
+                    <option value="">-- Consumidor Final (C/F) --</option>
                     {clientes.map(cliente => (
                         <option key={cliente.clienteId} value={cliente.clienteId}>
                             {cliente.nombreCompleto} — {cliente.nivelPrecioAsignado === 'Mayorista' ? '⭐ Mayorista' : 'Público'}

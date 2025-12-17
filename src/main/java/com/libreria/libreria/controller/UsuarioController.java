@@ -1,7 +1,6 @@
 package com.libreria.libreria.controller;
 
-import com.libreria.libreria.dto.LoginRequestDTO;
-import com.libreria.libreria.dto.UsuarioCreateDTO;
+import com.libreria.libreria.dto.CreateUsuarioDTO;
 import com.libreria.libreria.dto.UsuarioDTO;
 import com.libreria.libreria.service.UsuarioService;
 import jakarta.validation.Valid;
@@ -9,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -22,13 +23,13 @@ public class UsuarioController {
         this.usuarioService = usuarioService;
     }
 
-    @PostMapping("/registro")
-    public ResponseEntity<UsuarioDTO> registrarUsuario(@Valid @RequestBody UsuarioCreateDTO dto) {
-        return new ResponseEntity<>(usuarioService.registrarUsuario(dto), HttpStatus.CREATED);
+    @GetMapping
+    public ResponseEntity<List<UsuarioDTO>> obtenerUsuarios() {
+        return ResponseEntity.ok(usuarioService.obtenerUsuarios());
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<UsuarioDTO> login(@Valid @RequestBody LoginRequestDTO dto) {
-        return ResponseEntity.ok(usuarioService.login(dto));
+    @PostMapping
+    public ResponseEntity<UsuarioDTO> crearUsuario(@Valid @RequestBody CreateUsuarioDTO dto) {
+        return new ResponseEntity<>(usuarioService.crearUsuario(dto), HttpStatus.CREATED);
     }
 }

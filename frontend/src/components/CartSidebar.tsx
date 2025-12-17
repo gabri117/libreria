@@ -129,10 +129,10 @@ export const CartSidebar = () => {
 
                             <div className="text-right">
                                 <div className="text-[10px] text-gray-400 mb-0.5">
-                                    {item.cantidad} x ${item.precioAplicado.toFixed(2)}
+                                    {item.cantidad} x Q{item.precioAplicado.toFixed(2)}
                                 </div>
                                 <div className="font-bold text-gray-800">
-                                    ${item.subtotal.toFixed(2)}
+                                    Q{item.subtotal.toFixed(2)}
                                 </div>
                             </div>
                         </div>
@@ -145,15 +145,15 @@ export const CartSidebar = () => {
                 <div className="space-y-2 mb-6 text-sm">
                     <div className="flex justify-between text-gray-500">
                         <span>Subtotal</span>
-                        <span>${totalVenta.toFixed(2)}</span>
+                        <span>Q{totalVenta.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between text-gray-500">
-                        <span>Impuestos (Est.)</span>
-                        <span>$0.00</span>
+                        <span>IVA (12%)</span>
+                        <span>Included</span>
                     </div>
                     <div className="flex justify-between text-xl font-extrabold text-gray-900 pt-2 border-t border-dashed border-gray-200">
-                        <span>Total</span>
-                        <span>${totalVenta.toFixed(2)}</span>
+                        <span>Total a Pagar</span>
+                        <span>Q{totalVenta.toFixed(2)}</span>
                     </div>
                 </div>
 

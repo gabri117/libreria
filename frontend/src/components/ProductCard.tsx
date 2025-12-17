@@ -42,10 +42,10 @@ export const ProductCard = ({ product, onAdd }: ProductCardProps) => {
                     <div className="flex flex-col">
                         <span className="text-xs text-gray-500">Precio</span>
                         <span className="text-2xl font-extrabold text-blue-600">
-                            ${product.precioVenta.toFixed(2)}
+                            Q{product.precioVenta.toFixed(2)}
                         </span>
                         <span className="text-[10px] text-gray-400">
-                            Mayorista: ${product.precioMayorista.toFixed(2)}
+                            Mayorista: Q{product.precioMayorista.toFixed(2)}
                         </span>
                     </div>
 

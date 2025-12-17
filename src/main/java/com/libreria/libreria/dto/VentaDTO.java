@@ -31,7 +31,6 @@ public class VentaDTO {
 
     private LocalDateTime fechaVenta;
 
-    @NotNull
     private BigDecimal montoTotal;
 
     @NotNull
