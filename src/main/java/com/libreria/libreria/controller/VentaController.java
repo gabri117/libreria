@@ -2,6 +2,7 @@ package com.libreria.libreria.controller;
 
 import com.libreria.libreria.dto.VentaDTO;
 import com.libreria.libreria.service.VentaService;
+import java.util.List;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,5 +25,10 @@ public class VentaController {
     public ResponseEntity<VentaDTO> registrarVenta(@Valid @RequestBody VentaDTO ventaDTO) {
         VentaDTO nuevaVenta = ventaService.crearVenta(ventaDTO);
         return new ResponseEntity<>(nuevaVenta, HttpStatus.CREATED);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<VentaDTO>> listarVentas() {
+        return new ResponseEntity<>(ventaService.listarVentas(), HttpStatus.OK);
     }
 }

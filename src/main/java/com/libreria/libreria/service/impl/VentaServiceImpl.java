@@ -123,6 +123,12 @@ public class VentaServiceImpl implements VentaService {
                 return mapToDTO(savedVenta);
         }
 
+        @Override
+        public List<VentaDTO> listarVentas() {
+                List<Venta> ventas = ventaRepository.findAll();
+                return ventas.stream().map(this::mapToDTO).collect(Collectors.toList());
+        }
+
         private BigDecimal determinarPrecio(Producto producto, NivelPrecio nivelPrecio) {
                 switch (nivelPrecio) {
                         case Mayorista:
