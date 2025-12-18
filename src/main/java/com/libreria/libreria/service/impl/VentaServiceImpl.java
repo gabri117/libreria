@@ -6,7 +6,10 @@ import com.libreria.libreria.exception.StockInsuficienteException;
 import com.libreria.libreria.model.*;
 import com.libreria.libreria.model.enums.EstadoVenta;
 import com.libreria.libreria.model.enums.NivelPrecio;
+import com.libreria.libreria.model.enums.MetodoPago;
+import com.libreria.libreria.model.enums.TipoAccion;
 import com.libreria.libreria.repository.*;
+import com.libreria.libreria.service.AuditLogService;
 import com.libreria.libreria.service.VentaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,18 +29,21 @@ public class VentaServiceImpl implements VentaService {
         private final ClienteRepository clienteRepository;
         private final UsuarioRepository usuarioRepository;
         private final SesionCajaRepository sesionCajaRepository;
+        private final AuditLogService auditLogService;
 
         @Autowired
         public VentaServiceImpl(VentaRepository ventaRepository,
                         ProductoRepository productoRepository,
                         ClienteRepository clienteRepository,
                         UsuarioRepository usuarioRepository,
-                        SesionCajaRepository sesionCajaRepository) {
+                        SesionCajaRepository sesionCajaRepository,
+                        AuditLogService auditLogService) {
                 this.ventaRepository = ventaRepository;
                 this.productoRepository = productoRepository;
                 this.clienteRepository = clienteRepository;
                 this.usuarioRepository = usuarioRepository;
                 this.sesionCajaRepository = sesionCajaRepository;
+                this.auditLogService = auditLogService;
         }
 
         @Override
@@ -120,6 +126,16 @@ public class VentaServiceImpl implements VentaService {
                 venta.setMontoTotal(montoTotalCalculado);
                 Venta savedVenta = ventaRepository.save(venta);
 
+                // Audit log
+                try {
+                        String detalles = String.format("Venta creada: ID %d, Cliente: %s, Monto: %s",
+                                        savedVenta.getVentaId(), cliente.getNombreCompleto(), montoTotalCalculado);
+                        auditLogService.logAccion(usuario.getUsuarioId(), TipoAccion.CREATE, "Venta",
+                                        savedVenta.getVentaId(), detalles);
+                } catch (Exception e) {
+                        // Continue even if audit fails
+                }
+
                 return mapToDTO(savedVenta);
         }
 
@@ -127,6 +143,63 @@ public class VentaServiceImpl implements VentaService {
         public List<VentaDTO> listarVentas() {
                 List<Venta> ventas = ventaRepository.findAll();
                 return ventas.stream().map(this::mapToDTO).collect(Collectors.toList());
+        }
+
+        @Override
+        public VentaDTO obtenerVentaPorId(Integer ventaId) {
+                Venta venta = ventaRepository.findById(ventaId)
+                                .orElseThrow(() -> new RuntimeException("Venta no encontrada ID: " + ventaId));
+                return mapToDTO(venta);
+        }
+
+        @Override
+        public List<VentaDTO> filtrarVentas(LocalDateTime fechaInicio, LocalDateTime fechaFin,
+                        Integer clienteId, MetodoPago metodoPago, EstadoVenta estado) {
+                List<Venta> ventas = ventaRepository.filtrarVentas(fechaInicio, fechaFin, clienteId, metodoPago,
+                                estado);
+                return ventas.stream().map(this::mapToDTO).collect(Collectors.toList());
+        }
+
+        @Override
+        @Transactional
+        public VentaDTO anularVenta(Integer ventaId, Integer usuarioId, String motivo) {
+                // 1. Fetch Venta
+                Venta venta = ventaRepository.findById(ventaId)
+                                .orElseThrow(() -> new RuntimeException("Venta no encontrada ID: " + ventaId));
+
+                // 2. Validate state
+                if (venta.getEstado() == EstadoVenta.Anulada) {
+                        throw new RuntimeException("La venta ya está anulada.");
+                }
+
+                // 3. Fetch Usuario
+                Usuario usuarioAnulo = usuarioRepository.findById(usuarioId)
+                                .orElseThrow(() -> new RuntimeException("Usuario no encontrado ID: " + usuarioId));
+
+                // 4. Restore Stock
+                for (DetalleVenta detalle : venta.getDetalles()) {
+                        Producto producto = detalle.getProducto();
+                        producto.setCantidadStock(producto.getCantidadStock() + detalle.getCantidad());
+                        productoRepository.save(producto);
+                }
+
+                // 5. Update Venta
+                venta.setEstado(EstadoVenta.Anulada);
+                venta.setMotivoAnulacion(motivo);
+                venta.setFechaAnulacion(LocalDateTime.now());
+                venta.setUsuarioAnulo(usuarioAnulo);
+
+                Venta ventaAnulada = ventaRepository.save(venta);
+
+                // Audit log
+                try {
+                        String detalles = String.format("Venta anulada: ID %d, Motivo: %s", ventaId, motivo);
+                        auditLogService.logAccion(usuarioId, TipoAccion.ANULAR_VENTA, "Venta", ventaId, detalles);
+                } catch (Exception e) {
+                        // Continue even if audit fails
+                }
+
+                return mapToDTO(ventaAnulada);
         }
 
         private BigDecimal determinarPrecio(Producto producto, NivelPrecio nivelPrecio) {
@@ -166,7 +239,75 @@ public class VentaServiceImpl implements VentaService {
                                 .montoTotal(venta.getMontoTotal())
                                 .metodoPago(venta.getMetodoPago())
                                 .estado(venta.getEstado())
+                                .motivoAnulacion(venta.getMotivoAnulacion())
+                                .fechaAnulacion(venta.getFechaAnulacion())
+                                .usuarioAnuloId(venta.getUsuarioAnulo() != null ? venta.getUsuarioAnulo().getUsuarioId()
+                                                : null)
                                 .detalles(detallesDTO)
                                 .build();
+        }
+
+        @Override
+        public com.libreria.libreria.dto.EstadisticasVentasDTO obtenerEstadisticas(LocalDateTime fechaInicio,
+                        LocalDateTime fechaFin) {
+                BigDecimal totalVentas = ventaRepository.calcularTotalVentas(fechaInicio, fechaFin);
+                Long numeroTransacciones = ventaRepository.contarTransacciones(fechaInicio, fechaFin);
+
+                BigDecimal ticketPromedio = BigDecimal.ZERO;
+                if (numeroTransacciones > 0) {
+                        ticketPromedio = totalVentas.divide(BigDecimal.valueOf(numeroTransacciones), 2,
+                                        java.math.RoundingMode.HALF_UP);
+                }
+
+                // Calculate previous period for comparison
+                long daysDiff = java.time.Duration.between(fechaInicio, fechaFin).toDays();
+                LocalDateTime prevInicio = fechaInicio.minusDays(daysDiff);
+                LocalDateTime prevFin = fechaInicio.minusSeconds(1);
+
+                BigDecimal totalVentasPrev = ventaRepository.calcularTotalVentas(prevInicio, prevFin);
+                BigDecimal comparacion = BigDecimal.ZERO;
+
+                if (totalVentasPrev.compareTo(BigDecimal.ZERO) > 0) {
+                        comparacion = totalVentas.subtract(totalVentasPrev)
+                                        .divide(totalVentasPrev, 4, java.math.RoundingMode.HALF_UP)
+                                        .multiply(BigDecimal.valueOf(100));
+                }
+
+                return com.libreria.libreria.dto.EstadisticasVentasDTO.builder()
+                                .totalVentas(totalVentas)
+                                .numeroTransacciones(numeroTransacciones.intValue())
+                                .ticketPromedio(ticketPromedio)
+                                .comparacionPeriodoAnterior(comparacion)
+                                .build();
+        }
+
+        @Override
+        public List<com.libreria.libreria.dto.ProductoMasVendidoDTO> obtenerProductosMasVendidos(
+                        LocalDateTime fechaInicio, LocalDateTime fechaFin, Integer limite) {
+                List<Object[]> resultados = ventaRepository.obtenerProductosMasVendidos(fechaInicio, fechaFin);
+
+                return resultados.stream()
+                                .limit(limite != null ? limite : 10)
+                                .map(row -> com.libreria.libreria.dto.ProductoMasVendidoDTO.builder()
+                                                .productoId((Integer) row[0])
+                                                .nombreProducto((String) row[1])
+                                                .cantidadVendida(((Long) row[2]).intValue())
+                                                .montoTotal((BigDecimal) row[3])
+                                                .build())
+                                .collect(Collectors.toList());
+        }
+
+        @Override
+        public List<com.libreria.libreria.dto.VentasPorMetodoDTO> obtenerVentasPorMetodo(LocalDateTime fechaInicio,
+                        LocalDateTime fechaFin) {
+                List<Object[]> resultados = ventaRepository.obtenerVentasPorMetodo(fechaInicio, fechaFin);
+
+                return resultados.stream()
+                                .map(row -> com.libreria.libreria.dto.VentasPorMetodoDTO.builder()
+                                                .metodoPago((MetodoPago) row[0])
+                                                .numeroVentas(((Long) row[1]).intValue())
+                                                .montoTotal((BigDecimal) row[2])
+                                                .build())
+                                .collect(Collectors.toList());
         }
 }

@@ -5,8 +5,10 @@ import com.libreria.libreria.dto.LoginDTO;
 import com.libreria.libreria.dto.UsuarioDTO;
 import com.libreria.libreria.model.Rol;
 import com.libreria.libreria.model.Usuario;
+import com.libreria.libreria.model.enums.TipoAccion;
 import com.libreria.libreria.repository.RolRepository;
 import com.libreria.libreria.repository.UsuarioRepository;
+import com.libreria.libreria.service.AuditLogService;
 import com.libreria.libreria.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,13 +25,15 @@ public class UsuarioServiceImpl implements UsuarioService {
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuditLogService auditLogService;
 
     @Autowired
     public UsuarioServiceImpl(UsuarioRepository usuarioRepository, RolRepository rolRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder, AuditLogService auditLogService) {
         this.usuarioRepository = usuarioRepository;
         this.rolRepository = rolRepository;
         this.passwordEncoder = passwordEncoder;
+        this.auditLogService = auditLogService;
     }
 
     @Override
@@ -64,7 +68,18 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .activo(true)
                 .build();
 
-        return mapToDTO(usuarioRepository.save(usuario));
+        Usuario savedUsuario = usuarioRepository.save(usuario);
+
+        // Audit log
+        try {
+            auditLogService.logAccion(savedUsuario.getUsuarioId(), TipoAccion.CREATE, "Usuario",
+                    savedUsuario.getUsuarioId(),
+                    "Usuario creado: " + savedUsuario.getUsername());
+        } catch (Exception e) {
+            // Continue even if audit fails
+        }
+
+        return mapToDTO(savedUsuario);
     }
 
     @Override
@@ -83,6 +98,16 @@ public class UsuarioServiceImpl implements UsuarioService {
                     System.out.println("Usuario inactivo");
                     throw new RuntimeException("Usuario inactivo");
                 }
+
+                // Audit log for successful login
+                try {
+                    auditLogService.logAccion(usuario.getUsuarioId(), TipoAccion.LOGIN, "Usuario",
+                            usuario.getUsuarioId(),
+                            "Login exitoso: " + usuario.getUsername());
+                } catch (Exception e) {
+                    // Continue even if audit fails
+                }
+
                 return Optional.of(usuario);
             }
         } else {

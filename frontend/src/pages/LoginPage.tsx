@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { loginUsuario } from '../services/authService';
-import { BookOpen, Key, User, ArrowRight } from 'lucide-react';
+import { Key, User, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
@@ -30,15 +30,19 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4">
-            <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+            <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden animate-scale-in">
                 {/* Header Section */}
-                <div className="bg-gradient-to-br from-indigo-600 to-purple-700 p-8 text-center">
-                    <div className="mb-4 inline-flex p-3 bg-white/10 rounded-xl backdrop-blur-sm">
-                        <BookOpen size={40} className="text-white" />
+                <div className="bg-gradient-to-br from-brand-primary-500 to-brand-primary-600 p-8 text-center">
+                    <div className="mb-4 inline-flex items-center justify-center">
+                        <img
+                            src="/logo.png"
+                            alt="Librería María y José"
+                            className="h-20 w-auto object-contain drop-shadow-lg"
+                        />
                     </div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Librería POS</h1>
-                    <p className="text-indigo-100 text-sm">Sistema de Gestión y Puntos de Venta</p>
+                    <h1 className="text-3xl font-bold text-white mb-2">Librería María y José</h1>
+                    <p className="text-orange-100 text-sm">Sistema de Punto de Venta</p>
                 </div>
 
                 {/* Form Section */}
@@ -52,7 +56,7 @@ export default function LoginPage() {
                                     type="text"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-500 outline-none transition-all"
                                     placeholder="Ingresa tu usuario"
                                     autoFocus
                                 />
@@ -67,7 +71,7 @@ export default function LoginPage() {
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-500 outline-none transition-all"
                                     placeholder="••••••••"
                                 />
                             </div>
@@ -77,9 +81,9 @@ export default function LoginPage() {
                             type="submit"
                             disabled={isSubmitting}
                             className="
-                                w-full bg-gray-900 text-white font-bold py-3.5 rounded-xl
-                                hover:bg-gray-800 active:scale-[0.98] transition-all
-                                flex items-center justify-center gap-2 shadow-lg shadow-gray-200
+                                w-full bg-brand-primary-500 text-white font-bold py-3.5 rounded-xl
+                                hover:bg-brand-primary-600 active:scale-[0.98] transition-all
+                                flex items-center justify-center gap-2 shadow-lg shadow-brand-primary-500/30
                                 disabled:opacity-70 disabled:cursor-not-allowed
                             "
                         >
@@ -96,7 +100,7 @@ export default function LoginPage() {
 
                     <div className="mt-8 text-center">
                         <p className="text-xs text-gray-400">
-                            © 2025 Sistema Librería. Versión 1.0
+                            © 2025 Librería María y José. Sistema POS v1.0
                         </p>
                     </div>
                 </div>

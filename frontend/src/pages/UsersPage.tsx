@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Users, Plus, Shield, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import Navbar from '../components/Navbar';
 import { obtenerUsuarios, crearUsuario, ROLES } from '../services/userService';
 
 export default function UsersPage() {
@@ -42,7 +41,6 @@ export default function UsersPage() {
 
     return (
         <div className="min-h-screen bg-gray-50 font-sans">
-            <Navbar />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 {/* Header */}
                 <div className="flex justify-between items-center mb-8">

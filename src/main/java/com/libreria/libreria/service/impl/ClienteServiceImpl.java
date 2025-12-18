@@ -2,7 +2,9 @@ package com.libreria.libreria.service.impl;
 
 import com.libreria.libreria.dto.ClienteDTO;
 import com.libreria.libreria.model.Cliente;
+import com.libreria.libreria.model.enums.TipoAccion;
 import com.libreria.libreria.repository.ClienteRepository;
+import com.libreria.libreria.service.AuditLogService;
 import com.libreria.libreria.service.ClienteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,10 +18,12 @@ import java.util.stream.Collectors;
 public class ClienteServiceImpl implements ClienteService {
 
     private final ClienteRepository clienteRepository;
+    private final AuditLogService auditLogService;
 
     @Autowired
-    public ClienteServiceImpl(ClienteRepository clienteRepository) {
+    public ClienteServiceImpl(ClienteRepository clienteRepository, AuditLogService auditLogService) {
         this.clienteRepository = clienteRepository;
+        this.auditLogService = auditLogService;
     }
 
     @Override
@@ -45,6 +49,15 @@ public class ClienteServiceImpl implements ClienteService {
         Cliente cliente = mapToEntity(clienteDTO);
         cliente.setActivo(true); // Default active on create
         Cliente savedCliente = clienteRepository.save(cliente);
+
+        // Audit log
+        try {
+            auditLogService.logAccion(1, TipoAccion.CREATE, "Cliente", savedCliente.getClienteId(),
+                    "Cliente creado: " + savedCliente.getNombreCompleto());
+        } catch (Exception e) {
+            // Continue even if audit fails
+        }
+
         return mapToDTO(savedCliente);
     }
 
@@ -63,7 +76,18 @@ public class ClienteServiceImpl implements ClienteService {
                 existingCliente.setActivo(clienteDTO.getActivo());
             }
 
-            return mapToDTO(clienteRepository.save(existingCliente));
+            Cliente updated = clienteRepository.save(existingCliente);
+
+            // Audit log
+            try {
+                String detalles = String.format("Cliente actualizado: %s (ID: %d)", updated.getNombreCompleto(),
+                        updated.getClienteId());
+                auditLogService.logAccion(1, TipoAccion.UPDATE, "Cliente", updated.getClienteId(), detalles);
+            } catch (Exception e) {
+                // Continue even if audit fails
+            }
+
+            return mapToDTO(updated);
         }).orElseThrow(() -> new RuntimeException("Cliente no encontrado con ID: " + id));
     }
 
@@ -73,6 +97,15 @@ public class ClienteServiceImpl implements ClienteService {
         clienteRepository.findById(id).ifPresent(cliente -> {
             cliente.setActivo(false);
             clienteRepository.save(cliente);
+
+            // Audit log
+            try {
+                String detalles = String.format("Cliente eliminado (soft delete): %s (ID: %d)",
+                        cliente.getNombreCompleto(), cliente.getClienteId());
+                auditLogService.logAccion(1, TipoAccion.DELETE, "Cliente", cliente.getClienteId(), detalles);
+            } catch (Exception e) {
+                // Continue even if audit fails
+            }
         });
     }
 

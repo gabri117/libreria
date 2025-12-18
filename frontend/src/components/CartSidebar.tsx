@@ -56,7 +56,7 @@ export const CartSidebar = () => {
             <div className="h-full flex flex-col p-6 bg-white border-l border-gray-100">
                 <div className="mb-6">
                     <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                        <ShoppingBag className="text-blue-600" />
+                        <ShoppingBag className="text-brand-primary-500" />
                         Carrito
                     </h2>
                 </div>
@@ -77,7 +77,7 @@ export const CartSidebar = () => {
             <div className="p-6 border-b border-gray-100 bg-white z-10">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                        <ShoppingBag className="text-blue-600" />
+                        <ShoppingBag className="text-brand-primary-500" />
                         Carrito ({items.length})
                     </h2>
                     <button
@@ -114,14 +114,14 @@ export const CartSidebar = () => {
                             <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-1 border border-gray-200">
                                 <button
                                     onClick={() => actualizarCantidad(item.productoId, item.cantidad - 1)}
-                                    className="w-6 h-6 flex items-center justify-center rounded bg-white shadow-sm text-gray-600 hover:text-blue-600 active:scale-95 transition-all text-xs border border-gray-100"
+                                    className="w-6 h-6 flex items-center justify-center rounded bg-white shadow-sm text-gray-600 hover:text-brand-primary-500 active:scale-95 transition-all text-xs border border-gray-100"
                                 >
                                     <Minus size={12} strokeWidth={3} />
                                 </button>
                                 <span className="text-sm font-bold w-4 text-center">{item.cantidad}</span>
                                 <button
                                     onClick={() => actualizarCantidad(item.productoId, item.cantidad + 1)}
-                                    className="w-6 h-6 flex items-center justify-center rounded bg-white shadow-sm text-blue-600 hover:text-blue-700 active:scale-95 transition-all text-xs border border-gray-100"
+                                    className="w-6 h-6 flex items-center justify-center rounded bg-white shadow-sm text-brand-primary-500 hover:text-brand-primary-600 active:scale-95 transition-all text-xs border border-gray-100"
                                 >
                                     <Plus size={12} strokeWidth={3} />
                                 </button>
@@ -161,9 +161,9 @@ export const CartSidebar = () => {
                     onClick={handleProcesarVenta}
                     disabled={loading || items.length === 0}
                     className="
-                        w-full py-4 bg-gray-900 text-white rounded-xl font-bold 
-                        shadow-lg shadow-gray-200 
-                        hover:bg-blue-600 hover:shadow-blue-200 
+                        w-full py-4 bg-brand-primary-500 text-white rounded-xl font-bold 
+                        shadow-lg shadow-brand-primary-500/30 
+                        hover:bg-brand-primary-600
                         active:scale-[0.98] transition-all flex items-center justify-center gap-2
                         disabled:bg-gray-300 disabled:cursor-not-allowed
                     "

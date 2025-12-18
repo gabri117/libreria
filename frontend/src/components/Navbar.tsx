@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, Package, LogOut, BookOpen, Users, TrendingUp, Shield } from 'lucide-react';
+import { ShoppingCart, Package, LogOut, BookOpen, Users, TrendingUp, Shield, Receipt } from 'lucide-react';
 import { useSession } from '../context/SessionContext';
 import { useAuth } from '../context/AuthContext';
 import { StatusBadge } from './CashControl/StatusBadge';
@@ -33,11 +33,13 @@ export default function Navbar() {
                 <div className="flex items-center justify-between h-16">
                     {/* Logo / Brand */}
                     <div className="flex items-center gap-3">
-                        <div className="bg-gradient-to-br from-indigo-500 to-purple-600 p-2 rounded-lg">
-                            <BookOpen className="h-6 w-6 text-white" />
-                        </div>
-                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                            Librería POS
+                        <img
+                            src="/logo.png"
+                            alt="Librería María y José"
+                            className="h-10 w-auto object-contain"
+                        />
+                        <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">
+                            Librería María y José
                         </span>
                     </div>
 
@@ -46,7 +48,7 @@ export default function Navbar() {
                             to="/"
                             className={`
                                 flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
-                                ${isActive('/') ? 'bg-gray-800 text-white ring-1 ring-gray-700' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
+                                ${isActive('/') ? 'bg-brand-primary-500 text-white shadow-lg shadow-brand-primary-500/30' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
                             `}
                         >
                             <TrendingUp className="h-4 w-4" />
@@ -54,10 +56,21 @@ export default function Navbar() {
                         </Link>
 
                         <Link
+                            to="/ventas"
+                            className={`
+                                flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
+                                ${isActive('/ventas') ? 'bg-gray-800 text-white ring-1 ring-gray-700' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
+                            `}
+                        >
+                            <Receipt className="h-4 w-4" />
+                            Ventas
+                        </Link>
+
+                        <Link
                             to="/pos"
                             className={`
                                 flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
-                                ${isActive('/pos') ? 'bg-gray-800 text-white ring-1 ring-gray-700' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
+                                ${isActive('/pos') ? 'bg-brand-primary-500 text-white shadow-lg shadow-brand-primary-500/30' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
                             `}
                         >
                             <ShoppingCart className="h-4 w-4" />
@@ -68,7 +81,7 @@ export default function Navbar() {
                             to="/clientes"
                             className={`
                                 flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
-                                ${isActive('/clientes') ? 'bg-gray-800 text-white ring-1 ring-gray-700' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
+                                ${isActive('/clientes') ? 'bg-brand-primary-500 text-white shadow-lg shadow-brand-primary-500/30' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
                             `}
                         >
                             <Users className="h-4 w-4" />
@@ -82,7 +95,7 @@ export default function Navbar() {
                                     to="/inventario"
                                     className={`
                                         flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
-                                        ${isActive('/inventario') ? 'bg-gray-800 text-white ring-1 ring-gray-700' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
+                                        ${isActive('/inventario') ? 'bg-brand-primary-500 text-white shadow-lg shadow-brand-primary-500/30' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
                                     `}
                                 >
                                     <Package className="h-4 w-4" />
@@ -93,7 +106,7 @@ export default function Navbar() {
                                     to="/catalogos"
                                     className={`
                                         flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
-                                        ${isActive('/catalogos') ? 'bg-gray-800 text-white ring-1 ring-gray-700' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
+                                        ${isActive('/catalogos') ? 'bg-brand-primary-500 text-white shadow-lg shadow-brand-primary-500/30' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
                                     `}
                                 >
                                     <BookOpen className="h-4 w-4" />
@@ -104,7 +117,7 @@ export default function Navbar() {
                                     to="/usuarios"
                                     className={`
                                         flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
-                                        ${isActive('/usuarios') ? 'bg-gray-800 text-white ring-1 ring-gray-700' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
+                                        ${isActive('/usuarios') ? 'bg-brand-primary-500 text-white shadow-lg shadow-brand-primary-500/30' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
                                     `}
                                 >
                                     <Shield className="h-4 w-4" />

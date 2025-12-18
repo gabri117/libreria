@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DollarSign, ShoppingBag, TrendingUp, Calendar, ArrowRight } from 'lucide-react';
 import { obtenerVentas } from '../services/ventaService';
 import type { VentaDTO } from '../types';
@@ -6,6 +7,7 @@ import type { VentaDTO } from '../types';
 export const DashboardPage = () => {
     const [ventas, setVentas] = useState<VentaDTO[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const navigate = useNavigate();
 
     useEffect(() => {
         cargarDatos();
@@ -59,8 +61,8 @@ export const DashboardPage = () => {
 
             {/* KPIs Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-                    <div className="p-4 bg-indigo-50 text-indigo-600 rounded-xl">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+                    <div className="p-4 bg-brand-primary-50 text-brand-primary-600 rounded-xl">
                         <DollarSign size={24} />
                     </div>
                     <div>
@@ -69,8 +71,8 @@ export const DashboardPage = () => {
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-                    <div className="p-4 bg-emerald-50 text-emerald-600 rounded-xl">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+                    <div className="p-4 bg-brand-secondary-50 text-brand-secondary-600 rounded-xl">
                         <ShoppingBag size={24} />
                     </div>
                     <div>
@@ -79,8 +81,8 @@ export const DashboardPage = () => {
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-                    <div className="p-4 bg-blue-50 text-blue-600 rounded-xl">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+                    <div className="p-4 bg-brand-accent-blue/10 text-brand-accent-blue rounded-xl">
                         <TrendingUp size={24} />
                     </div>
                     <div>
@@ -107,7 +109,7 @@ export const DashboardPage = () => {
                                 <div key={i} className="flex-1 flex flex-col items-center group">
                                     <div className="relative w-full flex items-end justify-center">
                                         <div
-                                            className="w-full max-w-[40px] bg-indigo-500 rounded-t-lg transition-all duration-300 group-hover:bg-indigo-600 relative"
+                                            className="w-full max-w-[40px] bg-brand-primary-500 rounded-t-lg transition-all duration-300 group-hover:bg-brand-primary-600 relative"
                                             style={{ height: `${heightPercentage}%` }}
                                         >
                                             <div className="opacity-0 group-hover:opacity-100 absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs py-1 px-2 rounded pointer-events-none transition-opacity">
@@ -137,7 +139,7 @@ export const DashboardPage = () => {
                                     </p>
                                 </div>
                                 <div className="text-right">
-                                    <span className="block text-sm font-bold text-emerald-600">
+                                    <span className="block text-sm font-bold text-brand-secondary-600">
                                         +Q{(venta.montoTotal || 0).toFixed(2)}
                                     </span>
                                     <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{venta.metodoPago}</span>
@@ -147,7 +149,10 @@ export const DashboardPage = () => {
                         {ventas.length === 0 && <p className="text-gray-400 text-sm text-center py-4">No hay ventas registradas</p>}
                     </div>
 
-                    <button className="w-full mt-6 py-2 text-sm text-indigo-600 font-medium hover:bg-indigo-50 rounded-lg transition-colors flex items-center justify-center gap-1">
+                    <button
+                        onClick={() => navigate('/ventas')}
+                        className="w-full mt-6 py-2 text-sm text-brand-primary-600 font-medium hover:bg-brand-primary-50 rounded-lg transition-colors flex items-center justify-center gap-1"
+                    >
                         Ver Historial Completo <ArrowRight size={14} />
                     </button>
                 </div>

@@ -41,7 +41,7 @@ export const ProductCard = ({ product, onAdd }: ProductCardProps) => {
                 <div className="flex items-end justify-between mt-auto">
                     <div className="flex flex-col">
                         <span className="text-xs text-gray-500">Precio</span>
-                        <span className="text-2xl font-extrabold text-blue-600">
+                        <span className="text-2xl font-extrabold text-brand-secondary-600">
                             Q{product.precioVenta.toFixed(2)}
                         </span>
                         <span className="text-[10px] text-gray-400">
@@ -53,8 +53,8 @@ export const ProductCard = ({ product, onAdd }: ProductCardProps) => {
                         onClick={() => onAdd(product)}
                         disabled={!hasStock}
                         className="
-              mb-1 p-3 rounded-lg bg-blue-600 text-white shadow-blue-200 shadow-lg
-              hover:bg-blue-700 active:scale-95 transition-all
+              mb-1 p-3 rounded-lg bg-brand-primary-500 text-white shadow-brand-primary-500/30 shadow-lg
+              hover:bg-brand-primary-600 active:scale-95 transition-all
               disabled:bg-gray-400 disabled:shadow-none
             "
                         title={hasStock ? "Agregar al carrito" : "Sin stock"}

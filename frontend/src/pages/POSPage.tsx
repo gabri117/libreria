@@ -71,7 +71,7 @@ export const POSPage = () => {
                         <h1 className="text-2xl font-bold text-gray-800 mb-4">Punto de Venta</h1>
                         <div className="relative group">
                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <Search className="text-gray-400 group-focus-within:text-blue-500 transition-colors" size={20} />
+                                <Search className="text-gray-400 group-focus-within:text-brand-primary-500 transition-colors" size={20} />
                             </div>
                             <input
                                 type="text"
@@ -80,7 +80,7 @@ export const POSPage = () => {
                             w-full pl-11 pr-4 py-3.5 
                             bg-gray-100 border-transparent 
                             rounded-xl text-gray-900 placeholder-gray-500 
-                            focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
+                            focus:outline-none focus:bg-white focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-500
                             transition-all duration-300
                             shadow-inner
                         "
@@ -96,7 +96,7 @@ export const POSPage = () => {
                 <div className="flex-1 overflow-y-auto p-6 scroll-smooth">
                     {loading ? (
                         <div className="h-full flex flex-col items-center justify-center text-gray-400">
-                            <Loader2 className="animate-spin mb-4 text-blue-500" size={48} />
+                            <Loader2 className="animate-spin mb-4 text-brand-primary-500" size={48} />
                             <p className="font-medium animate-pulse">Cargando inventario...</p>
                         </div>
                     ) : (
@@ -106,7 +106,7 @@ export const POSPage = () => {
                                     <p className="text-lg">No se encontraron productos.</p>
                                     <button
                                         onClick={() => setBusqueda('')}
-                                        className="mt-2 text-blue-600 hover:underline text-sm"
+                                        className="mt-2 text-brand-primary-600 hover:underline text-sm"
                                     >
                                         Limpiar búsqueda
                                     </button>

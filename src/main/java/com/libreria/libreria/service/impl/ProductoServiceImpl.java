@@ -4,9 +4,11 @@ import com.libreria.libreria.dto.ProductoDTO;
 import com.libreria.libreria.model.Categoria;
 import com.libreria.libreria.model.Producto;
 import com.libreria.libreria.model.Ubicacion;
+import com.libreria.libreria.model.enums.TipoAccion;
 import com.libreria.libreria.repository.CategoriaRepository;
 import com.libreria.libreria.repository.ProductoRepository;
 import com.libreria.libreria.repository.UbicacionRepository;
+import com.libreria.libreria.service.AuditLogService;
 import com.libreria.libreria.service.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,14 +24,17 @@ public class ProductoServiceImpl implements ProductoService {
     private final ProductoRepository productoRepository;
     private final CategoriaRepository categoriaRepository;
     private final UbicacionRepository ubicacionRepository;
+    private final AuditLogService auditLogService;
 
     @Autowired
     public ProductoServiceImpl(ProductoRepository productoRepository,
             CategoriaRepository categoriaRepository,
-            UbicacionRepository ubicacionRepository) {
+            UbicacionRepository ubicacionRepository,
+            AuditLogService auditLogService) {
         this.productoRepository = productoRepository;
         this.categoriaRepository = categoriaRepository;
         this.ubicacionRepository = ubicacionRepository;
+        this.auditLogService = auditLogService;
     }
 
     @Override
@@ -55,6 +60,16 @@ public class ProductoServiceImpl implements ProductoService {
         Producto producto = mapToEntity(productoDTO);
         producto.setActivo(true);
         Producto savedProducto = productoRepository.save(producto);
+
+        // Audit log - assuming system user ID 1 for now (should be from
+        // SecurityContext)
+        try {
+            auditLogService.logAccion(1, TipoAccion.CREATE, "Producto", savedProducto.getProductoId(),
+                    "Producto creado: " + savedProducto.getNombre());
+        } catch (Exception e) {
+            // Continue even if audit fails
+        }
+
         return mapToDTO(savedProducto);
     }
 
@@ -90,7 +105,18 @@ public class ProductoServiceImpl implements ProductoService {
                 existingProducto.setUbicacion(ubicacion);
             }
 
-            return mapToDTO(productoRepository.save(existingProducto));
+            Producto updated = productoRepository.save(existingProducto);
+
+            // Audit log
+            try {
+                String detalles = String.format("Producto actualizado: %s (ID: %d)", updated.getNombre(),
+                        updated.getProductoId());
+                auditLogService.logAccion(1, TipoAccion.UPDATE, "Producto", updated.getProductoId(), detalles);
+            } catch (Exception e) {
+                // Continue even if audit fails
+            }
+
+            return mapToDTO(updated);
         }).orElseThrow(() -> new RuntimeException("Producto no encontrado con ID: " + id));
     }
 
@@ -100,6 +126,15 @@ public class ProductoServiceImpl implements ProductoService {
         productoRepository.findById(id).ifPresent(producto -> {
             producto.setActivo(false);
             productoRepository.save(producto);
+
+            // Audit log
+            try {
+                String detalles = String.format("Producto eliminado (soft delete): %s (ID: %d)", producto.getNombre(),
+                        producto.getProductoId());
+                auditLogService.logAccion(1, TipoAccion.DELETE, "Producto", producto.getProductoId(), detalles);
+            } catch (Exception e) {
+                // Continue even if audit fails
+            }
         });
     }
 

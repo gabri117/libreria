@@ -4,6 +4,7 @@ import { SessionProvider } from './context/SessionContext';
 import { AuthProvider } from './context/AuthContext';
 import { POSPage } from './pages/POSPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { SalesHistoryPage } from './pages/SalesHistoryPage';
 import InventoryPage from './pages/InventoryPage';
 import ClientsPage from './pages/ClientsPage';
 import CatalogsPage from './pages/CatalogsPage';
@@ -49,6 +50,7 @@ function App() {
 
             <Route element={<ProtectedRoute children={<Layout />} />} >
               <Route path="/" element={<DashboardPage />} />
+              <Route path="/ventas" element={<SalesHistoryPage />} />
               <Route path="/pos" element={<POSPage />} />
               <Route path="/inventario" element={<InventoryPage />} />
               <Route path="/clientes" element={<ClientsPage />} />

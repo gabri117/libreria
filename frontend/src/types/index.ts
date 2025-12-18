@@ -59,11 +59,17 @@ export interface ClienteFormData {
 }
 
 export interface DetalleVentaDTO {
+    detalleId?: number;
     productoId: number;
+    productoNombre?: string;
     cantidad: number;
     precioUnitario?: number; // Optional as backend calculates it, but good to have
     descuento?: number;
+    subtotal?: number;
 }
+
+export type EstadoVenta = 'Completada' | 'Anulada';
+export type MetodoPago = 'Efectivo' | 'Tarjeta' | 'Mixto';
 
 export interface VentaDTO {
     ventaId?: number; // Optional because not needed for creation
@@ -74,9 +80,25 @@ export interface VentaDTO {
     sesionId: number;
     fechaVenta?: string;
     montoTotal?: number;
-    metodoPago: 'Efectivo' | 'Tarjeta' | 'Mixto';
-    estado?: string;
+    metodoPago: MetodoPago;
+    estado?: EstadoVenta;
+    motivoAnulacion?: string;
+    fechaAnulacion?: string;
+    usuarioAnuloId?: number;
     detalles: DetalleVentaDTO[];
+}
+
+export interface FiltrosVenta {
+    fechaInicio?: string;
+    fechaFin?: string;
+    clienteId?: number;
+    metodoPago?: MetodoPago;
+    estado?: EstadoVenta;
+}
+
+export interface AnularVentaRequest {
+    usuarioId: number;
+    motivo: string;
 }
 
 export type EstadoSesion = 'Abierta' | 'Cerrada';
