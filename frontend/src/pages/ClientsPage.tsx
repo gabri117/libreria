@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Users, Plus, Search, RefreshCw } from 'lucide-react';
+import { Plus, Search, RefreshCw } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ClientTable } from '../components/ClientTable';
 import ClientModal from '../components/ClientModal';
@@ -75,64 +75,69 @@ export default function ClientsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 font-sans">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="min-h-screen font-sans">
+            <div className="max-w-full mx-auto p-4 sm:p-8">
                 {/* Header */}
-                <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6 animate-fade-in">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                            <div className="p-2 bg-indigo-600 rounded-lg text-white shadow-lg shadow-indigo-200">
-                                <Users size={24} />
-                            </div>
-                            Gestión de Clientes
-                        </h1>
-                        <p className="text-gray-500 mt-1 ml-14">Administra tu cartera de clientes y niveles de precio.</p>
+                        <div className="flex items-center gap-3 mb-2">
+                            <span className="h-1 w-8 bg-brand-primary-500 rounded-full"></span>
+                            <h1 className="text-3xl font-black text-white uppercase tracking-tighter">Gestión de Clientes</h1>
+                        </div>
+                        <p className="text-gray-500 font-bold uppercase tracking-[0.2em] text-[10px] ml-11">Administración de cartera y tarifas</p>
                     </div>
 
-                    <div className="flex gap-3">
+                    <div className="flex items-center gap-4">
                         <button
                             onClick={cargarClientes}
-                            className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-white rounded-lg transition-all border border-transparent hover:border-gray-200"
+                            className="p-3 glass-card text-gray-400 hover:text-brand-primary-400 rounded-2xl transition-all border-white/5 hover:border-brand-primary-500/30 active:scale-90"
                             title="Recargar"
                         >
-                            <RefreshCw size={20} className={isLoading ? 'animate-spin' : ''} />
+                            <RefreshCw size={20} strokeWidth={2.5} className={isLoading ? 'animate-spin text-brand-primary-500' : ''} />
                         </button>
                         <button
                             onClick={() => { setSelectedCliente(null); setIsModalOpen(true); }}
-                            className="bg-gray-900 hover:bg-gray-800 text-white px-5 py-2.5 rounded-xl font-semibold shadow-lg shadow-gray-200 flex items-center gap-2 transition-all active:scale-95"
+                            className="bg-brand-primary-500 hover:bg-brand-primary-400 text-white px-8 py-4 rounded-2xl font-black shadow-2xl shadow-brand-primary-600/20 flex items-center gap-3 transition-all active:scale-95 uppercase tracking-widest text-xs"
                         >
-                            <Plus size={20} /> Nuevo Cliente
+                            <Plus size={20} strokeWidth={3} /> Nuevo Cliente
                         </button>
                     </div>
                 </div>
 
                 {/* Search */}
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex gap-4">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <div className="glass-panel p-6 border-white/5 rounded-3xl mb-10 flex gap-4 animate-slide-up">
+                    <div className="relative flex-1 group">
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-brand-primary-400 transition-colors" size={20} />
                         <input
                             type="text"
-                            placeholder="Buscar por nombre o NIT..."
-                            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all"
+                            placeholder="Buscar por nombre, NIT o ID de cliente..."
+                            className="w-full pl-14 pr-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-bold"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
                 </div>
 
-                {/* Table */}
-                {isLoading ? (
-                    <div className="text-center py-20 bg-white rounded-xl border border-gray-100 border-dashed">
-                        <RefreshCw className="animate-spin mx-auto text-indigo-500 mb-4" size={32} />
-                        <p className="text-gray-500">Cargando clientes...</p>
-                    </div>
-                ) : (
-                    <ClientTable
-                        clientes={filteredClientes}
-                        onEdit={(c) => { setSelectedCliente(c); setIsModalOpen(true); }}
-                        onDelete={handleEliminar}
-                    />
-                )}
+                {/* Table Area */}
+                <div className="animate-fade-in delay-100">
+                    {isLoading ? (
+                        <div className="text-center py-32 glass-panel rounded-3xl border-dashed border-white/5">
+                            <div className="relative inline-block mb-6">
+                                <div className="absolute inset-0 bg-brand-primary-500/20 blur-2xl rounded-full"></div>
+                                <RefreshCw className="animate-spin text-brand-primary-500 relative z-10" size={48} strokeWidth={2.5} />
+                            </div>
+                            <p className="text-gray-500 font-black uppercase tracking-[0.3em] text-xs">Consultando base de datos...</p>
+                        </div>
+                    ) : (
+                        <div className="glass-panel rounded-[2.5rem] border-white/5 overflow-hidden shadow-2xl shadow-black/40">
+                            <ClientTable
+                                clientes={filteredClientes}
+                                onEdit={(c) => { setSelectedCliente(c); setIsModalOpen(true); }}
+                                onDelete={handleEliminar}
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
 
             <ClientModal

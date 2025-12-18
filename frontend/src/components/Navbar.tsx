@@ -29,25 +29,30 @@ export default function Navbar() {
 
     return (
         <header className="bg-gray-900 border-b border-gray-800 text-white shadow-lg z-50 sticky top-0">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-full mx-auto px-2 sm:px-4 lg:px-6">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo / Brand */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 shrink-0 mr-2 xl:mr-6">
                         <img
                             src="/logo.png"
                             alt="Librería María y José"
-                            className="h-10 w-auto object-contain"
+                            className="h-12 w-auto object-contain py-1"
                         />
-                        <span className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">
-                            Librería María y José
-                        </span>
+                        <div className="flex flex-col leading-none">
+                            <span className="text-sm font-black bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 whitespace-nowrap">
+                                LIBRERÍA
+                            </span>
+                            <span className="text-[10px] font-bold text-brand-primary-400 tracking-wider whitespace-nowrap">
+                                MARÍA Y JOSÉ
+                            </span>
+                        </div>
                     </div>
 
-                    <nav className="flex items-center gap-6">
+                    <nav className="flex items-center gap-1 xl:gap-2 overflow-x-auto no-scrollbar py-2">
                         <Link
                             to="/"
                             className={`
-                                flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
+                                flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-200 text-xs font-semibold whitespace-nowrap
                                 ${isActive('/') ? 'bg-brand-primary-500 text-white shadow-lg shadow-brand-primary-500/30' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
                             `}
                         >
@@ -58,7 +63,7 @@ export default function Navbar() {
                         <Link
                             to="/ventas"
                             className={`
-                                flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
+                                flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-200 text-xs font-semibold whitespace-nowrap
                                 ${isActive('/ventas') ? 'bg-gray-800 text-white ring-1 ring-gray-700' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
                             `}
                         >
@@ -69,7 +74,7 @@ export default function Navbar() {
                         <Link
                             to="/pos"
                             className={`
-                                flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
+                                flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-200 text-xs font-semibold whitespace-nowrap
                                 ${isActive('/pos') ? 'bg-brand-primary-500 text-white shadow-lg shadow-brand-primary-500/30' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
                             `}
                         >
@@ -80,7 +85,7 @@ export default function Navbar() {
                         <Link
                             to="/clientes"
                             className={`
-                                flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
+                                flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-200 text-xs font-semibold whitespace-nowrap
                                 ${isActive('/clientes') ? 'bg-brand-primary-500 text-white shadow-lg shadow-brand-primary-500/30' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
                             `}
                         >
@@ -94,7 +99,7 @@ export default function Navbar() {
                                 <Link
                                     to="/inventario"
                                     className={`
-                                        flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
+                                        flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-200 text-xs font-semibold whitespace-nowrap
                                         ${isActive('/inventario') ? 'bg-brand-primary-500 text-white shadow-lg shadow-brand-primary-500/30' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
                                     `}
                                 >
@@ -105,7 +110,7 @@ export default function Navbar() {
                                 <Link
                                     to="/catalogos"
                                     className={`
-                                        flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
+                                        flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-200 text-xs font-semibold whitespace-nowrap
                                         ${isActive('/catalogos') ? 'bg-brand-primary-500 text-white shadow-lg shadow-brand-primary-500/30' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
                                     `}
                                 >
@@ -116,7 +121,7 @@ export default function Navbar() {
                                 <Link
                                     to="/usuarios"
                                     className={`
-                                        flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200 text-sm font-medium
+                                        flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-200 text-xs font-semibold whitespace-nowrap
                                         ${isActive('/usuarios') ? 'bg-brand-primary-500 text-white shadow-lg shadow-brand-primary-500/30' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
                                     `}
                                 >
@@ -128,11 +133,11 @@ export default function Navbar() {
                     </nav>
 
                     {/* Right Side: Logout and Session Badge */}
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 xl:gap-4 shrink-0">
                         <button
                             onClick={handleLogoutClick}
                             className={`
-                                flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                                flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all duration-200
                                 ${sesionActiva
                                     ? 'text-gray-400 hover:text-red-400 hover:bg-red-500/10'
                                     : 'text-gray-400 hover:text-white hover:bg-gray-800'}
@@ -140,21 +145,21 @@ export default function Navbar() {
                             title={sesionActiva ? "Cerrar Caja para Salir" : "Cerrar Sesión"}
                         >
                             <LogOut className="h-4 w-4" />
-                            <span>{sesionActiva ? 'Cerrar Caja' : 'Salir'}</span>
+                            <span className="hidden sm:inline">{sesionActiva ? 'Cerrar Caja' : 'Salir'}</span>
                         </button>
 
-                        <div className="pl-4 border-l border-gray-700">
+                        <div className="pl-2 border-l border-gray-700">
                             <StatusBadge sesion={sesionActiva} />
                         </div>
 
                         {/* User Info Badge */}
-                        <div className="flex items-center gap-2 text-xs text-gray-400">
-                            <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold">
+                        <div className="flex items-center gap-2 text-[10px] text-gray-400">
+                            <div className="w-8 h-8 rounded-full bg-brand-primary-600 flex items-center justify-center text-white font-bold shrink-0">
                                 {user?.nombreCompleto?.charAt(0) || 'U'}
                             </div>
-                            <div className="hidden lg:block">
-                                <p className="text-white font-medium">{user?.nombreCompleto}</p>
-                                <p>{user?.rol}</p>
+                            <div className="hidden xl:block">
+                                <p className="text-white font-bold leading-none mb-0.5">{user?.nombreCompleto}</p>
+                                <p className="opacity-70">{user?.rol}</p>
                             </div>
                         </div>
                     </div>

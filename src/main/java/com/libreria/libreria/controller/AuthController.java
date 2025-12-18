@@ -27,23 +27,33 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody LoginDTO loginDTO) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginDTO.getUsername(),
-                        loginDTO.getPassword()));
+    public ResponseEntity<?> login(@Valid @RequestBody LoginDTO loginDTO) {
+        try {
+            System.out.println("Iniciando login para: " + loginDTO.getUsername());
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginDTO.getUsername(),
+                            loginDTO.getPassword()));
 
-        Usuario usuario = (Usuario) authentication.getPrincipal();
-        String jwtToken = jwtService.generateToken(usuario);
+            Usuario usuario = (Usuario) authentication.getPrincipal();
+            String jwtToken = jwtService.generateToken(usuario);
 
-        AuthResponseDTO response = AuthResponseDTO.builder()
-                .usuarioId(usuario.getUsuarioId())
-                .username(usuario.getUsername())
-                .nombreCompleto(usuario.getNombreCompleto())
-                .rol(usuario.getRol().getNombre())
-                .token(jwtToken)
-                .build();
+            AuthResponseDTO response = AuthResponseDTO.builder()
+                    .usuarioId(usuario.getUsuarioId())
+                    .username(usuario.getUsername())
+                    .nombreCompleto(usuario.getNombreCompleto())
+                    .rol(usuario.getRol().getNombre())
+                    .token(jwtToken)
+                    .build();
 
-        return ResponseEntity.ok(response);
+            return ResponseEntity.ok(response);
+        } catch (org.springframework.security.core.AuthenticationException e) {
+            System.err.println("Error de autenticación para " + loginDTO.getUsername() + ": " + e.getMessage());
+            return ResponseEntity.status(401).body("Credenciales inválidas o cuenta desactivada");
+        } catch (Exception e) {
+            System.err.println("Error inesperado en login: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error interno del servidor");
+        }
     }
 }

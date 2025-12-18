@@ -91,162 +91,186 @@ export default function CatalogsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50/50 p-8">
-            <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Gestión de Catálogos</h1>
-                    <p className="text-gray-500">Categorías, Ubicaciones y Proveedores del sistema</p>
-                </div>
-                <button
-                    onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
-                    className="flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 font-bold text-white shadow-lg transition-all hover:bg-indigo-700 hover:shadow-xl"
-                >
-                    <Plus className="h-5 w-5" />
-                    Nuevo {activeTab === 'categorias' ? 'Categoría' : activeTab === 'ubicaciones' ? 'Ubicación' : 'Proveedor'}
-                </button>
-            </header>
-
-            {/* Tabs */}
-            <div className="mb-8 flex space-x-2 border-b border-gray-200">
-                <button
-                    onClick={() => setActiveTab('categorias')}
-                    className={`flex items-center gap-2 border-b-2 px-6 py-4 text-sm font-bold transition-all ${activeTab === 'categorias'
-                        ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                        }`}
-                >
-                    <Tags className="h-4 w-4" />
-                    Categorías
-                </button>
-                <button
-                    onClick={() => setActiveTab('ubicaciones')}
-                    className={`flex items-center gap-2 border-b-2 px-6 py-4 text-sm font-bold transition-all ${activeTab === 'ubicaciones'
-                        ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                        }`}
-                >
-                    <MapPin className="h-4 w-4" />
-                    Ubicaciones
-                </button>
-                <button
-                    onClick={() => setActiveTab('proveedores')}
-                    className={`flex items-center gap-2 border-b-2 px-6 py-4 text-sm font-bold transition-all ${activeTab === 'proveedores'
-                        ? 'border-indigo-600 text-indigo-600 bg-indigo-50/50'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                        }`}
-                >
-                    <Truck className="h-4 w-4" />
-                    Proveedores
-                </button>
-            </div>
-
-            {/* Content Area */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-6 border-b border-gray-100 flex items-center gap-4">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-                        <input
-                            type="text"
-                            placeholder="Buscar..."
-                            className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-sans"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
+        <div className="min-h-screen font-sans">
+            <div className="max-w-full mx-auto p-4 sm:p-8">
+                {/* Header */}
+                <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6 animate-fade-in">
+                    <div>
+                        <div className="flex items-center gap-3 mb-2">
+                            <span className="h-1 w-8 bg-brand-primary-500 rounded-full"></span>
+                            <h1 className="text-3xl font-black text-white uppercase tracking-tighter">Gestión de Catálogos</h1>
+                        </div>
+                        <p className="text-gray-500 font-bold uppercase tracking-[0.2em] text-[10px] ml-11">Maestros de Categorías, Ubicaciones y Proveedores</p>
                     </div>
+
+                    <button
+                        onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
+                        className="bg-brand-primary-500 hover:bg-brand-primary-400 text-white px-8 py-4 rounded-2xl font-black shadow-2xl shadow-brand-primary-600/20 flex items-center gap-3 transition-all active:scale-95 uppercase tracking-widest text-xs border border-brand-primary-400/20"
+                    >
+                        <Plus size={20} strokeWidth={3} />
+                        Nuevo {activeTab === 'categorias' ? 'Categoría' : activeTab === 'ubicaciones' ? 'Ubicación' : 'Proveedor'}
+                    </button>
                 </div>
 
-                {isLoading ? (
-                    <div className="p-20 flex flex-col items-center justify-center text-gray-400">
-                        <Loader2 className="h-10 w-10 animate-spin mb-4 text-indigo-500" />
-                        <p className="font-medium">Cargando catálogo...</p>
+                {/* Modern Tabs */}
+                <div className="flex gap-2 p-2 glass-panel border-white/5 rounded-[2rem] mb-10 inline-flex animate-slide-up">
+                    {[
+                        { id: 'categorias', icon: Tags, label: 'Categorías' },
+                        { id: 'ubicaciones', icon: MapPin, label: 'Ubicaciones' },
+                        { id: 'proveedores', icon: Truck, label: 'Proveedores' }
+                    ].map((tab) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id as CatalogType)}
+                            className={`
+                                flex items-center gap-3 px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-[10px] transition-all duration-500 relative overflow-hidden group
+                                ${activeTab === tab.id
+                                    ? 'bg-brand-primary-500 text-white shadow-lg shadow-brand-primary-500/20'
+                                    : 'text-gray-500 hover:text-white hover:bg-white/5'}
+                            `}
+                        >
+                            <tab.icon size={16} strokeWidth={2.5} />
+                            {tab.label}
+                            {activeTab === tab.id && (
+                                <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent animate-shimmer"></div>
+                            )}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Content Table Area */}
+                <div className="glass-panel rounded-[2.5rem] border-white/5 overflow-hidden shadow-2xl shadow-black/40 animate-fade-in delay-100">
+                    <div className="p-6 border-b border-white/5 bg-white/[0.02] flex items-center gap-4">
+                        <div className="relative flex-1 group">
+                            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-brand-primary-400 transition-colors" size={20} />
+                            <input
+                                type="text"
+                                placeholder={`Buscar por nombre de ${activeTab}...`}
+                                className="w-full pl-14 pr-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-bold"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
                     </div>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left font-sans">
-                            <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-bold tracking-wider">
-                                <tr>
-                                    {activeTab === 'categorias' && (
-                                        <>
-                                            <th className="px-6 py-4">ID</th>
-                                            <th className="px-6 py-4">Nombre</th>
-                                            <th className="px-6 py-4">Descripción</th>
-                                        </>
-                                    )}
-                                    {activeTab === 'ubicaciones' && (
-                                        <>
-                                            <th className="px-6 py-4">ID</th>
-                                            <th className="px-6 py-4">Nombre Corto</th>
-                                            <th className="px-6 py-4">Descripción</th>
-                                        </>
-                                    )}
-                                    {activeTab === 'proveedores' && (
-                                        <>
-                                            <th className="px-6 py-4">ID</th>
-                                            <th className="px-6 py-4">Empresa</th>
-                                            <th className="px-6 py-4">Contacto</th>
-                                            <th className="px-6 py-4">Teléfono</th>
-                                        </>
-                                    )}
-                                    <th className="px-6 py-4 text-right">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100">
-                                {filteredData().map((item: any) => (
-                                    <tr key={activeTab === 'categorias' ? item.categoriaId : activeTab === 'ubicaciones' ? item.ubicacionId : item.proveedorId} className="hover:bg-gray-50/80 transition-colors group">
+
+                    {isLoading ? (
+                        <div className="p-32 flex flex-col items-center justify-center text-gray-500">
+                            <div className="relative inline-block mb-6">
+                                <div className="absolute inset-0 bg-brand-primary-500/20 blur-2xl rounded-full"></div>
+                                <Loader2 className="h-12 w-12 animate-spin text-brand-primary-500 relative z-10" strokeWidth={2.5} />
+                            </div>
+                            <p className="font-black uppercase tracking-[0.3em] text-xs">Sincronizando catálogos...</p>
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto custom-scrollbar">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="border-b border-white/5 bg-white/[0.01]">
                                         {activeTab === 'categorias' && (
                                             <>
-                                                <td className="px-6 py-4 font-mono text-xs text-gray-400">#{item.categoriaId}</td>
-                                                <td className="px-6 py-4 font-bold text-gray-900">{item.nombre}</td>
-                                                <td className="px-6 py-4 text-gray-500 max-w-xs truncate">{item.descripcion || '-'}</td>
+                                                <th className="px-6 py-5 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">ID</th>
+                                                <th className="px-6 py-5 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Nombre</th>
+                                                <th className="px-6 py-5 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Descripción</th>
                                             </>
                                         )}
                                         {activeTab === 'ubicaciones' && (
                                             <>
-                                                <td className="px-6 py-4 font-mono text-xs text-gray-400">#{item.ubicacionId}</td>
-                                                <td className="px-6 py-4 font-bold text-gray-900">{item.nombreCorto}</td>
-                                                <td className="px-6 py-4 text-gray-500 max-w-xs truncate">{item.descripcion}</td>
+                                                <th className="px-6 py-5 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">ID</th>
+                                                <th className="px-6 py-5 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Nombre Corto</th>
+                                                <th className="px-6 py-5 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Descripción</th>
                                             </>
                                         )}
                                         {activeTab === 'proveedores' && (
                                             <>
-                                                <td className="px-6 py-4 font-mono text-xs text-gray-400">#{item.proveedorId}</td>
-                                                <td className="px-6 py-4 font-bold text-gray-900">{item.nombreEmpresa}</td>
-                                                <td className="px-6 py-4 text-gray-500">{item.nombreContacto}</td>
-                                                <td className="px-6 py-4 text-gray-500">{item.telefono}</td>
+                                                <th className="px-6 py-5 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">ID</th>
+                                                <th className="px-6 py-5 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Empresa</th>
+                                                <th className="px-6 py-5 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Contacto</th>
+                                                <th className="px-6 py-5 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Teléfono</th>
                                             </>
                                         )}
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex justify-end gap-2">
-                                                <button
-                                                    onClick={() => { setEditingItem(item); setIsModalOpen(true); }}
-                                                    className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
-                                                >
-                                                    <Pencil className="h-4 w-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(activeTab === 'categorias' ? item.categoriaId : activeTab === 'ubicaciones' ? item.ubicacionId : item.proveedorId)}
-                                                    className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
-                                            </div>
-                                        </td>
+                                        <th className="px-6 py-5 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] text-right">Acciones</th>
                                     </tr>
-                                ))}
-                                {filteredData().length === 0 && (
-                                    <tr>
-                                        <td colSpan={4} className="px-6 py-20 text-center text-gray-400">
-                                            No se encontraron elementos
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
+                                </thead>
+                                <tbody className="divide-y divide-white/5">
+                                    {filteredData().map((item: any) => (
+                                        <tr key={activeTab === 'categorias' ? item.categoriaId : activeTab === 'ubicaciones' ? item.ubicacionId : item.proveedorId} className="hover:bg-white/[0.03] transition-all duration-300 group">
+                                            {activeTab === 'categorias' && (
+                                                <>
+                                                    <td className="px-6 py-5 font-mono text-[10px] font-bold text-gray-500">#{item.categoriaId}</td>
+                                                    <td className="px-6 py-5">
+                                                        <span className="text-white font-black tracking-tight group-hover:text-brand-primary-400 transition-colors uppercase text-sm">
+                                                            {item.nombre}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-5 text-gray-500 font-bold text-xs max-w-xs truncate">{item.descripcion || '-'}</td>
+                                                </>
+                                            )}
+                                            {activeTab === 'ubicaciones' && (
+                                                <>
+                                                    <td className="px-6 py-5 font-mono text-[10px] font-bold text-gray-500">#{item.ubicacionId}</td>
+                                                    <td className="px-6 py-5">
+                                                        <span className="text-white font-black tracking-tight group-hover:text-brand-primary-400 transition-colors uppercase text-sm">
+                                                            {item.nombreCorto}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-5 text-gray-500 font-bold text-xs max-w-xs truncate">{item.descripcion}</td>
+                                                </>
+                                            )}
+                                            {activeTab === 'proveedores' && (
+                                                <>
+                                                    <td className="px-6 py-5 font-mono text-[10px] font-bold text-gray-500">#{item.proveedorId}</td>
+                                                    <td className="px-6 py-5">
+                                                        <div className="flex flex-col">
+                                                            <span className="text-white font-black tracking-tight group-hover:text-brand-primary-400 transition-colors uppercase text-sm">
+                                                                {item.nombreEmpresa}
+                                                            </span>
+                                                            <span className="text-[10px] font-bold text-gray-600 mt-1">{item.nitProveedor || 'S/N NIT'}</span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-5 text-gray-400 font-bold text-xs">{item.nombreContacto || '-'}</td>
+                                                    <td className="px-6 py-5">
+                                                        <span className="text-brand-secondary-400 font-black text-xs tracking-widest">{item.telefono || '-'}</span>
+                                                    </td>
+                                                </>
+                                            )}
+                                            <td className="px-6 py-5 text-right">
+                                                <div className="flex justify-end gap-2">
+                                                    <button
+                                                        onClick={() => { setEditingItem(item); setIsModalOpen(true); }}
+                                                        className="p-3 glass-card border-white/5 text-gray-500 hover:text-brand-primary-400 hover:border-brand-primary-500/30 hover:bg-brand-primary-500/5 rounded-xl transition-all active:scale-90 group/btn"
+                                                    >
+                                                        <Pencil size={16} strokeWidth={2.5} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(activeTab === 'categorias' ? item.categoriaId : activeTab === 'ubicaciones' ? item.ubicacionId : item.proveedorId)}
+                                                        className="p-3 glass-card border-white/5 text-gray-500 hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/5 rounded-xl transition-all active:scale-90 group/btn"
+                                                    >
+                                                        <Trash2 size={16} strokeWidth={2.5} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                    {filteredData().length === 0 && (
+                                        <tr>
+                                            <td colSpan={5} className="px-6 py-24 text-center">
+                                                <div className="flex flex-col items-center gap-4 opacity-40">
+                                                    <Tags size={64} className="text-gray-500" strokeWidth={1} />
+                                                    <div>
+                                                        <p className="text-white font-black uppercase tracking-widest text-sm">Lista Vacía</p>
+                                                        <p className="text-gray-500 text-xs font-bold uppercase mt-1">No se encontraron elementos en esta categoría</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
             </div>
 
-            {/* TODO: Add CatalogModal here */}
             {isModalOpen && (
                 <CatalogModal
                     type={activeTab}
@@ -288,62 +312,145 @@ function CatalogModal({ type, onClose, onSave, item }: any) {
         }
     };
 
+    const modalTitle = `${item ? 'Editar' : 'Nuevo'} ${type === 'categorias' ? 'Categoría' : type === 'ubicaciones' ? 'Ubicación' : 'Proveedor'}`;
+    const Icon = type === 'categorias' ? Tags : type === 'ubicaciones' ? MapPin : Truck;
+
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
-                <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white">
-                    <h3 className="text-xl font-bold">{item ? 'Editar' : 'Nuevo'} {type === 'categorias' ? 'Categoría' : type === 'ubicaciones' ? 'Ubicación' : 'Proveedor'}</h3>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div
+                className="absolute inset-0 bg-slate-950/60 backdrop-blur-xl animate-fade-in"
+                onClick={onClose}
+            ></div>
+
+            <div className="relative w-full max-w-lg glass-panel rounded-[2.5rem] border-white/10 shadow-2xl overflow-hidden animate-slide-up">
+                {/* Header */}
+                <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+                    <div className="flex items-center gap-4">
+                        <div className="glass-card p-4 rounded-2xl border-white/10 text-brand-primary-400 shadow-lg shadow-brand-primary-500/10">
+                            <Icon size={28} strokeWidth={2.5} />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-black text-white tracking-tight uppercase leading-none">
+                                {modalTitle}
+                            </h2>
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mt-2">
+                                {type.slice(0, -1)} del sistema
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="p-3 text-gray-500 hover:text-white transition-colors bg-white/5 rounded-2xl border border-white/5"
+                    >
+                        <Plus className="rotate-45" size={20} strokeWidth={3} />
+                    </button>
                 </div>
-                <form onSubmit={handleSubmit} className="p-6 space-y-4 font-sans">
+
+                <form onSubmit={handleSubmit} className="p-8 space-y-6">
                     {type === 'categorias' && (
                         <>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Nombre</label>
-                                <input required className="w-full border rounded-lg p-2" value={formData.nombre} onChange={e => setFormData({ ...formData, nombre: e.target.value })} />
+                            <div className="group">
+                                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-brand-primary-400 transition-colors">Nombre de Categoría</label>
+                                <input
+                                    required
+                                    className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-bold"
+                                    value={formData.nombre}
+                                    onChange={e => setFormData({ ...formData, nombre: e.target.value })}
+                                    placeholder="Ej. Papelería"
+                                />
                             </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Descripción</label>
-                                <textarea className="w-full border rounded-lg p-2" value={formData.descripcion} onChange={e => setFormData({ ...formData, descripcion: e.target.value })} />
+                            <div className="group">
+                                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-brand-primary-400 transition-colors">Descripción</label>
+                                <textarea
+                                    className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-bold min-h-[100px] resize-none"
+                                    value={formData.descripcion}
+                                    onChange={e => setFormData({ ...formData, descripcion: e.target.value })}
+                                    placeholder="Opcional..."
+                                />
                             </div>
                         </>
                     )}
+
                     {type === 'ubicaciones' && (
                         <>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Nombre Corto</label>
-                                <input required className="w-full border rounded-lg p-2" value={formData.nombreCorto} onChange={e => setFormData({ ...formData, nombreCorto: e.target.value })} />
+                            <div className="group">
+                                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-brand-primary-400 transition-colors">Nombre Corto</label>
+                                <input
+                                    required
+                                    className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-bold"
+                                    value={formData.nombreCorto}
+                                    onChange={e => setFormData({ ...formData, nombreCorto: e.target.value })}
+                                    placeholder="Ej. PASILLO-A"
+                                />
                             </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Descripción</label>
-                                <textarea required className="w-full border rounded-lg p-2" value={formData.descripcion} onChange={e => setFormData({ ...formData, descripcion: e.target.value })} />
+                            <div className="group">
+                                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-brand-primary-400 transition-colors">Descripción Técnica</label>
+                                <textarea
+                                    required
+                                    className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-bold min-h-[100px] resize-none"
+                                    value={formData.descripcion}
+                                    onChange={e => setFormData({ ...formData, descripcion: e.target.value })}
+                                    placeholder="Ubicación detallada en el almacén..."
+                                />
                             </div>
                         </>
                     )}
+
                     {type === 'proveedores' && (
-                        <>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">Empresa</label>
-                                <input required className="w-full border rounded-lg p-2" value={formData.nombreEmpresa} onChange={e => setFormData({ ...formData, nombreEmpresa: e.target.value })} />
+                        <div className="space-y-6">
+                            <div className="group">
+                                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-brand-primary-400 transition-colors">Nombre de la Empresa</label>
+                                <input
+                                    required
+                                    className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-bold"
+                                    value={formData.nombreEmpresa}
+                                    onChange={e => setFormData({ ...formData, nombreEmpresa: e.target.value })}
+                                    placeholder="Distribuidora X"
+                                />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Contacto</label>
-                                    <input className="w-full border rounded-lg p-2" value={formData.nombreContacto} onChange={e => setFormData({ ...formData, nombreContacto: e.target.value })} />
+                                <div className="group">
+                                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-brand-primary-400 transition-colors">Contacto</label>
+                                    <input
+                                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 transition-all font-bold"
+                                        value={formData.nombreContacto}
+                                        onChange={e => setFormData({ ...formData, nombreContacto: e.target.value })}
+                                    />
                                 </div>
-                                <div>
-                                    <label className="block text-sm font-bold text-gray-700 mb-1">Teléfono</label>
-                                    <input className="w-full border rounded-lg p-2" value={formData.telefono} onChange={e => setFormData({ ...formData, telefono: e.target.value })} />
+                                <div className="group">
+                                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-brand-primary-400 transition-colors">Teléfono</label>
+                                    <input
+                                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 transition-all font-bold"
+                                        value={formData.telefono}
+                                        onChange={e => setFormData({ ...formData, telefono: e.target.value })}
+                                    />
                                 </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-bold text-gray-700 mb-1">NIT</label>
-                                <input className="w-full border rounded-lg p-2" value={formData.nitProveedor} onChange={e => setFormData({ ...formData, nitProveedor: e.target.value })} />
+                            <div className="group">
+                                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-brand-primary-400 transition-colors">NIT Proveedor</label>
+                                <input
+                                    className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-bold uppercase tracking-widest"
+                                    value={formData.nitProveedor}
+                                    onChange={e => setFormData({ ...formData, nitProveedor: e.target.value })}
+                                />
                             </div>
-                        </>
+                        </div>
                     )}
-                    <div className="pt-4 flex gap-3">
-                        <button type="button" onClick={onClose} className="flex-1 border rounded-lg py-2 font-bold text-gray-500 hover:bg-gray-50">Cancelar</button>
-                        <button type="submit" className="flex-1 bg-indigo-600 text-white rounded-lg py-2 font-bold hover:bg-indigo-700 shadow-md">Guardar</button>
+
+                    <div className="pt-4 flex gap-4">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 px-8 py-4 glass-card border-white/5 text-gray-400 hover:text-white rounded-2xl transition-all font-black uppercase tracking-widest text-[10px] active:scale-95"
+                        >
+                            Cancelar
+                        </button>
+                        <button
+                            type="submit"
+                            className="flex-[1.5] bg-brand-primary-500 hover:bg-brand-primary-400 text-white px-8 py-4 rounded-2xl font-black shadow-xl shadow-brand-primary-600/20 flex items-center justify-center gap-3 transition-all active:scale-95 uppercase tracking-widest text-[10px] border border-brand-primary-400/20"
+                        >
+                            Guardar {type === 'proveedores' ? 'Proveedor' : type === 'ubicaciones' ? 'Ubicación' : 'Categoría'}
+                        </button>
                     </div>
                 </form>
             </div>

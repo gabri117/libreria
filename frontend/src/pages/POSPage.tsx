@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
-import { Search, Loader2 } from 'lucide-react';
+import { Search, Loader2, ShoppingBag } from 'lucide-react';
 import { toast, Toaster } from 'react-hot-toast';
 
 import type { Producto } from '../types';
@@ -60,30 +60,33 @@ export const POSPage = () => {
     };
 
     return (
-        <div className="flex h-screen bg-gray-50 overflow-hidden font-sans">
+        <div className="flex h-screen overflow-hidden font-sans">
             <Toaster />
 
             {/* --- Main Content Area (Products) --- */}
             <div className="flex-1 flex flex-col h-full overflow-hidden relative">
                 {/* Header / Search Bar */}
-                <div className="bg-white p-6 border-b border-gray-200 shadow-sm z-10">
+                <div className="glass-panel p-6 border-b-0 shadow-xl z-20 m-4 rounded-3xl">
                     <div className="max-w-4xl mx-auto w-full">
-                        <h1 className="text-2xl font-bold text-gray-800 mb-4">Punto de Venta</h1>
+                        <div className="flex items-center gap-3 mb-4">
+                            <span className="h-1 w-6 bg-brand-primary-500 rounded-full"></span>
+                            <h1 className="text-xl font-black text-white uppercase tracking-wider">Punto de Venta</h1>
+                        </div>
                         <div className="relative group">
-                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                <Search className="text-gray-400 group-focus-within:text-brand-primary-500 transition-colors" size={20} />
+                            <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                <Search className="text-gray-500 group-focus-within:text-brand-primary-400 transition-colors" size={20} />
                             </div>
                             <input
                                 type="text"
-                                placeholder="Buscar por nombre o SKU..."
+                                placeholder="Buscar productos por nombre o SKU..."
                                 className="
-                            w-full pl-11 pr-4 py-3.5 
-                            bg-gray-100 border-transparent 
-                            rounded-xl text-gray-900 placeholder-gray-500 
-                            focus:outline-none focus:bg-white focus:ring-2 focus:ring-brand-primary-500/20 focus:border-brand-primary-500
-                            transition-all duration-300
-                            shadow-inner
-                        "
+                                    w-full pl-12 pr-4 py-4
+                                    bg-white/5 border border-white/5
+                                    rounded-2xl text-white placeholder-gray-500 
+                                    focus:outline-none focus:bg-white/10 focus:ring-4 focus:ring-brand-primary-500/10 focus:border-brand-primary-500/50
+                                    transition-all duration-300
+                                    shadow-inner
+                                "
                                 value={busqueda}
                                 onChange={(e) => setBusqueda(e.target.value)}
                                 autoFocus
@@ -93,26 +96,27 @@ export const POSPage = () => {
                 </div>
 
                 {/* Product Grid */}
-                <div className="flex-1 overflow-y-auto p-6 scroll-smooth">
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 scroll-smooth">
                     {loading ? (
-                        <div className="h-full flex flex-col items-center justify-center text-gray-400">
-                            <Loader2 className="animate-spin mb-4 text-brand-primary-500" size={48} />
-                            <p className="font-medium animate-pulse">Cargando inventario...</p>
+                        <div className="h-full flex flex-col items-center justify-center text-brand-primary-400">
+                            <Loader2 className="animate-spin mb-4" size={48} strokeWidth={2.5} />
+                            <p className="font-black uppercase tracking-widest text-xs animate-pulse">Consultando Inventario...</p>
                         </div>
                     ) : (
-                        <div className="max-w-7xl mx-auto">
+                        <div className="max-w-full mx-auto">
                             {productosFiltrados.length === 0 ? (
-                                <div className="text-center py-20 text-gray-400">
-                                    <p className="text-lg">No se encontraron productos.</p>
+                                <div className="text-center py-20 text-gray-600">
+                                    <ShoppingBag size={64} className="mx-auto mb-4 opacity-10" />
+                                    <p className="text-lg font-bold">No se encontraron productos.</p>
                                     <button
                                         onClick={() => setBusqueda('')}
-                                        className="mt-2 text-brand-primary-600 hover:underline text-sm"
+                                        className="mt-4 px-6 py-2 glass-card text-brand-primary-400 rounded-xl font-bold hover:bg-brand-primary-500 hover:text-white transition-all"
                                     >
                                         Limpiar búsqueda
                                     </button>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 mb-10">
                                     {productosFiltrados.map((producto) => (
                                         <ProductCard
                                             key={producto.productoId}
@@ -128,13 +132,15 @@ export const POSPage = () => {
             </div>
 
             {/* --- Sidebar (Cart) --- */}
-            <div className="w-[400px] h-full flex-shrink-0 z-20 bg-white">
+            <div className="w-[420px] h-full flex-shrink-0 z-30 m-4 ml-0">
                 <CartSidebar />
             </div>
 
             {/* Session Guard */}
             {!sessionLoading && !sesionActiva && (
-                <OpeningModal onOpen={abrirSesion} />
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm">
+                    <OpeningModal onOpen={abrirSesion} />
+                </div>
             )}
         </div>
     );

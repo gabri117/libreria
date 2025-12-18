@@ -57,104 +57,133 @@ const ClientModal = ({ isOpen, onClose, onSave, cliente }: ClientModalProps) => 
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+            <div className="glass-panel border-white/5 rounded-[2.5rem] shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh] relative">
+
+                {/* Header Decoration */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-brand-primary-500 to-transparent opacity-50"></div>
+
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                    <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                        {cliente ? 'Editar Cliente' : 'Nuevo Cliente'}
-                    </h2>
-                    <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-all">
-                        <X size={20} />
+                <div className="px-10 py-8 border-b border-white/5 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-brand-primary-500/10 rounded-2xl border border-brand-primary-500/20">
+                            <User size={24} className="text-brand-primary-400" />
+                        </div>
+                        <div>
+                            <h2 className="text-2xl font-black text-white uppercase tracking-tighter leading-none">
+                                {cliente ? 'Ficha de Cliente' : 'Nuevo Cliente'}
+                            </h2>
+                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">Información de Facturación y Tarifas</p>
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="p-3 text-gray-500 hover:text-white rounded-2xl hover:bg-white/5 transition-all">
+                        <X size={20} strokeWidth={3} />
                     </button>
                 </div>
 
                 {/* Body */}
-                <div className="p-6 overflow-y-auto">
-                    <form id="client-form" onSubmit={handleSubmit} className="space-y-4">
+                <div className="p-10 overflow-y-auto custom-scrollbar space-y-8">
+                    <form id="client-form" onSubmit={handleSubmit} className="space-y-8">
 
-                        {/* Nombre */}
-                        <div className="space-y-1.5">
-                            <label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-                                <User size={14} className="text-indigo-600" /> Nombre Completo <span className="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                required
-                                value={formData.nombreCompleto}
-                                onChange={e => setFormData({ ...formData, nombreCompleto: e.target.value })}
-                                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all text-sm py-2.5"
-                                placeholder="Ej: Juan Pérez"
-                            />
-                        </div>
-
-                        {/* NIT y Telefono */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-                                    <Hash size={14} className="text-gray-500" /> NIT / DPI
+                        <div className="space-y-6">
+                            {/* Nombre */}
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] flex items-center gap-2 ml-2">
+                                    Nombre Completo <span className="text-brand-primary-500">*</span>
                                 </label>
-                                <input
-                                    type="text"
-                                    value={formData.nit}
-                                    onChange={e => setFormData({ ...formData, nit: e.target.value })}
-                                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all text-sm py-2.5"
-                                    placeholder="CF"
-                                />
+                                <div className="relative group">
+                                    <User className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-brand-primary-400 transition-colors" size={18} />
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formData.nombreCompleto}
+                                        onChange={e => setFormData({ ...formData, nombreCompleto: e.target.value })}
+                                        className="w-full pl-14 pr-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-bold placeholder-gray-800"
+                                        placeholder="Juan Pérez"
+                                    />
+                                </div>
                             </div>
-                            <div className="space-y-1.5">
-                                <label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-                                    <Phone size={14} className="text-gray-500" /> Teléfono
+
+                            {/* NIT y Telefono */}
+                            <div className="grid grid-cols-2 gap-6">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] flex items-center gap-2 ml-2">
+                                        NIT / Identificación
+                                    </label>
+                                    <div className="relative group">
+                                        <Hash className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-brand-primary-400 transition-colors" size={18} />
+                                        <input
+                                            type="text"
+                                            value={formData.nit}
+                                            onChange={e => setFormData({ ...formData, nit: e.target.value })}
+                                            className="w-full pl-14 pr-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-bold placeholder-gray-800"
+                                            placeholder="C/F"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] flex items-center gap-2 ml-2">
+                                        Teléfono
+                                    </label>
+                                    <div className="relative group">
+                                        <Phone className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-brand-primary-400 transition-colors" size={18} />
+                                        <input
+                                            type="tel"
+                                            value={formData.telefono}
+                                            onChange={e => setFormData({ ...formData, telefono: e.target.value })}
+                                            className="w-full pl-14 pr-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-bold placeholder-gray-800"
+                                            placeholder="5555-0000"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Email */}
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] flex items-center gap-2 ml-2">
+                                    Correo Electrónico
                                 </label>
-                                <input
-                                    type="tel"
-                                    value={formData.telefono}
-                                    onChange={e => setFormData({ ...formData, telefono: e.target.value })}
-                                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all text-sm py-2.5"
-                                    placeholder="5555-5555"
-                                />
+                                <div className="relative group">
+                                    <Mail className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-brand-primary-400 transition-colors" size={18} />
+                                    <input
+                                        type="email"
+                                        value={formData.email}
+                                        onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                        className="w-full pl-14 pr-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-bold placeholder-gray-800"
+                                        placeholder="correo@ejemplo.com"
+                                    />
+                                </div>
                             </div>
-                        </div>
 
-                        {/* Email */}
-                        <div className="space-y-1.5">
-                            <label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-                                <Mail size={14} className="text-gray-500" /> Email
-                            </label>
-                            <input
-                                type="email"
-                                value={formData.email}
-                                onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all text-sm py-2.5"
-                                placeholder="cliente@ejemplo.com"
-                            />
-                        </div>
-
-                        {/* Direccion */}
-                        <div className="space-y-1.5">
-                            <label className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-                                <MapPin size={14} className="text-gray-500" /> Dirección
-                            </label>
-                            <textarea
-                                value={formData.direccion}
-                                onChange={e => setFormData({ ...formData, direccion: e.target.value })}
-                                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 transition-all text-sm py-2.5 min-h-[80px] resize-none"
-                                placeholder="Dirección de facturación..."
-                            />
+                            {/* Direccion */}
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] flex items-center gap-2 ml-2">
+                                    Dirección de Entrega
+                                </label>
+                                <div className="relative group">
+                                    <MapPin className="absolute left-5 top-6 text-gray-600 group-focus-within:text-brand-primary-400 transition-colors" size={18} />
+                                    <textarea
+                                        value={formData.direccion}
+                                        onChange={e => setFormData({ ...formData, direccion: e.target.value })}
+                                        className="w-full pl-14 pr-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-bold placeholder-gray-800 min-h-[100px] resize-none"
+                                        placeholder="Dirección completa..."
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         {/* Nivel de Precio */}
-                        <div className="space-y-1.5 bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-                            <label className="text-sm font-bold text-indigo-900 flex items-center gap-1.5 mb-2">
-                                <Key size={14} /> Nivel de Precio Asignado
+                        <div className="space-y-4 pt-4 border-t border-white/5">
+                            <label className="text-[10px] font-black text-brand-primary-400 uppercase tracking-[0.3em] flex items-center gap-3 ml-2">
+                                <Key size={14} strokeWidth={3} /> Tarifa Asignada al Cliente
                             </label>
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-3 gap-3">
                                 {(['Publico', 'Mayorista', 'Costo'] as NivelPrecio[]).map((nivel) => (
                                     <label key={nivel} className={`
-                                        cursor-pointer text-center rounded-lg border p-2 text-xs font-semibold select-none transition-all
+                                        cursor-pointer text-center rounded-2xl border py-4 px-2 text-[10px] font-black uppercase tracking-widest select-none transition-all duration-300
                                         ${formData.nivelPrecioAsignado === nivel
-                                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-md transform scale-105'
-                                            : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:bg-indigo-50'}
+                                            ? 'bg-brand-primary-500 text-white border-brand-primary-400 shadow-xl shadow-brand-primary-500/20 scale-105'
+                                            : 'bg-white/5 text-gray-500 border-white/5 hover:border-brand-primary-500/30 hover:bg-white/10'}
                                     `}>
                                         <input
                                             type="radio"
@@ -168,20 +197,17 @@ const ClientModal = ({ isOpen, onClose, onSave, cliente }: ClientModalProps) => 
                                     </label>
                                 ))}
                             </div>
-                            <p className="text-[10px] text-indigo-700 mt-2">
-                                * Determina automáticamente el precio de venta en el POS.
-                            </p>
                         </div>
 
                     </form>
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end gap-3">
+                <div className="px-10 py-8 border-t border-white/5 flex justify-end gap-4">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-all"
+                        className="px-8 py-4 text-[10px] font-black border border-white/10 text-gray-500 rounded-2xl hover:bg-white/5 hover:text-white transition-all uppercase tracking-widest"
                     >
                         Cancelar
                     </button>
@@ -190,12 +216,17 @@ const ClientModal = ({ isOpen, onClose, onSave, cliente }: ClientModalProps) => 
                         form="client-form"
                         disabled={isSubmitting}
                         className="
-                            px-4 py-2 text-sm font-semibold text-white bg-indigo-600 rounded-lg 
-                            hover:bg-indigo-700 active:scale-95 transition-all shadow-lg shadow-indigo-200
-                            disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2
+                            px-8 py-4 text-[10px] font-black text-white bg-brand-primary-600 rounded-2xl 
+                            hover:bg-brand-primary-500 active:scale-95 transition-all shadow-2xl shadow-brand-primary-600/20
+                            disabled:opacity-20 disabled:cursor-not-allowed flex items-center gap-3 uppercase tracking-widest border border-brand-primary-400/20
                         "
                     >
-                        {isSubmitting ? 'Guardando...' : <><Save size={16} /> Guardar Cliente</>}
+                        {isSubmitting ? (
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                <span>Procesando...</span>
+                            </div>
+                        ) : <><Save size={18} strokeWidth={2.5} /> Guardar Cambios</>}
                     </button>
                 </div>
             </div>

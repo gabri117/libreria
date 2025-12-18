@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Package, RefreshCw, Search } from 'lucide-react';
+import { Plus, Package, RefreshCw, Search, AlertTriangle, DollarSign } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ProductTable from '../components/ProductTable';
 import ProductModal from '../components/ProductModal';
@@ -124,124 +124,132 @@ export default function InventoryPage() {
     );
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50 to-purple-50">
-            <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="min-h-screen font-sans">
+            <div className="max-w-full mx-auto p-4 sm:p-8">
                 {/* Header */}
-                <div className="mb-8">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 p-4 shadow-lg">
-                            <Package className="h-10 w-10 text-white" />
+                <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6 animate-fade-in">
+                    <div>
+                        <div className="flex items-center gap-3 mb-2">
+                            <span className="h-1 w-8 bg-brand-primary-500 rounded-full"></span>
+                            <h1 className="text-3xl font-black text-white uppercase tracking-tighter">Inventario General</h1>
                         </div>
-                        <div>
-                            <h1 className="text-4xl font-bold text-gray-900">
-                                Gestión de Inventario
-                            </h1>
-                            <p className="mt-1 text-lg text-gray-600">
-                                Administra tus productos y controla el stock
-                            </p>
+                        <p className="text-gray-500 font-bold uppercase tracking-[0.2em] text-[10px] ml-11">Control de Existencias y Almacén</p>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <div className="flex flex-col items-end mr-4 hidden lg:block">
+                            <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest leading-none">Última Sincronización</span>
+                            <span className="text-xs font-bold text-brand-primary-400">Hace unos momentos</span>
+                        </div>
+                        <button
+                            onClick={handleNuevoProducto}
+                            className="bg-brand-primary-500 hover:bg-brand-primary-400 text-white px-8 py-4 rounded-2xl font-black shadow-2xl shadow-brand-primary-600/20 flex items-center gap-3 transition-all active:scale-95 uppercase tracking-widest text-xs border border-brand-primary-400/20"
+                        >
+                            <Plus size={20} strokeWidth={3} /> Nuevo Producto
+                        </button>
+                    </div>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 animate-slide-up">
+                    {/* Total Products */}
+                    <div className="glass-panel p-8 rounded-[2rem] border-white/5 relative overflow-hidden group">
+                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-brand-primary-500/5 blur-3xl rounded-full group-hover:bg-brand-primary-500/10 transition-colors"></div>
+                        <div className="flex justify-between items-start relative z-10">
+                            <div>
+                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Total Productos</p>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-4xl font-black text-white tracking-tighter leading-none">{productos.length}</span>
+                                    <span className="text-xs font-bold text-gray-500 uppercase">Items</span>
+                                </div>
+                            </div>
+                            <div className="glass-card p-4 rounded-2xl border-white/5 text-brand-primary-400">
+                                <Package size={24} strokeWidth={2.5} />
+                            </div>
                         </div>
                     </div>
 
-                    {/* Stats Cards */}
-                    <div className="mt-6 grid gap-4 sm:grid-cols-3">
-                        <div className="rounded-xl bg-white p-6 shadow-lg ring-1 ring-gray-200">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">Total Productos</p>
-                                    <p className="mt-2 text-3xl font-bold text-gray-900">
-                                        {productos.length}
-                                    </p>
-                                </div>
-                                <div className="rounded-full bg-indigo-100 p-3">
-                                    <Package className="h-8 w-8 text-indigo-600" />
+                    {/* Low Stock */}
+                    <div className="glass-panel p-8 rounded-[2rem] border-white/5 relative overflow-hidden group">
+                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-red-500/5 blur-3xl rounded-full group-hover:bg-red-500/10 transition-colors"></div>
+                        <div className="flex justify-between items-start relative z-10">
+                            <div>
+                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Stock Crítico</p>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-4xl font-black text-red-500 tracking-tighter leading-none">{productosConStockBajo}</span>
+                                    <span className="text-xs font-bold text-gray-500 uppercase">Alertas</span>
                                 </div>
                             </div>
-                        </div>
-
-                        <div className="rounded-xl bg-white p-6 shadow-lg ring-1 ring-gray-200">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">Stock Bajo</p>
-                                    <p className="mt-2 text-3xl font-bold text-red-600">
-                                        {productosConStockBajo}
-                                    </p>
-                                </div>
-                                <div className="rounded-full bg-red-100 p-3">
-                                    <Package className="h-8 w-8 text-red-600" />
-                                </div>
+                            <div className="glass-card p-4 rounded-2xl border-white/5 text-red-400">
+                                <AlertTriangle size={24} strokeWidth={2.5} />
                             </div>
                         </div>
+                    </div>
 
-                        <div className="rounded-xl bg-white p-6 shadow-lg ring-1 ring-gray-200">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600">Valor Total</p>
-                                    <p className="mt-2 text-3xl font-bold text-green-600">
-                                        {new Intl.NumberFormat('es-MX', {
-                                            style: 'currency',
-                                            currency: 'MXN',
-                                            minimumFractionDigits: 0
-                                        }).format(valorTotalInventario)}
-                                    </p>
+                    {/* Inventory Value */}
+                    <div className="glass-panel p-8 rounded-[2rem] border-white/5 relative overflow-hidden group">
+                        <div className="absolute -top-10 -right-10 w-32 h-32 bg-brand-secondary-500/5 blur-3xl rounded-full group-hover:bg-brand-secondary-500/10 transition-colors"></div>
+                        <div className="flex justify-between items-start relative z-10">
+                            <div>
+                                <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-4">Valor Invertido</p>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-lg font-black text-brand-secondary-400">Q</span>
+                                    <span className="text-3xl font-black text-white tracking-tighter leading-none">
+                                        {valorTotalInventario.toLocaleString('es-GT', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </span>
                                 </div>
-                                <div className="rounded-full bg-green-100 p-3">
-                                    <Package className="h-8 w-8 text-green-600" />
-                                </div>
+                            </div>
+                            <div className="glass-card p-4 rounded-2xl border-white/5 text-brand-secondary-400">
+                                <DollarSign size={24} strokeWidth={2.5} />
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Actions Bar */}
-                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="relative flex-1 max-w-md">
-                        <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                {/* Actions & Search */}
+                <div className="glass-panel p-6 border-white/5 rounded-3xl mb-10 flex flex-col lg:flex-row gap-6 animate-fade-in delay-100">
+                    <div className="relative flex-1 group">
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-brand-primary-400 transition-colors" size={20} />
                         <input
                             type="text"
-                            placeholder="Buscar por nombre, SKU o categoría..."
+                            placeholder="Filtrar por nombre, SKU, marca o categoría..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-12 pr-4 shadow-sm transition-all focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full pl-14 pr-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-bold"
                         />
                     </div>
 
-                    <div className="flex gap-3">
-                        <button
-                            onClick={cargarDatos}
-                            disabled={isLoading}
-                            className="flex items-center gap-2 rounded-lg border-2 border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 shadow-sm transition-all hover:bg-gray-50 disabled:opacity-50"
-                        >
-                            <RefreshCw className={`h-5 w-5 ${isLoading ? 'animate-spin' : ''}`} />
-                            Actualizar
-                        </button>
-
-                        <button
-                            onClick={handleNuevoProducto}
-                            className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:shadow-xl"
-                        >
-                            <Plus className="h-5 w-5" />
-                            Nuevo Producto
-                        </button>
-                    </div>
+                    <button
+                        onClick={cargarDatos}
+                        disabled={isLoading}
+                        className="flex items-center justify-center gap-3 px-8 py-4 glass-card border-white/5 text-gray-400 hover:text-white rounded-2xl transition-all font-black uppercase tracking-widest text-[10px] active:scale-95 disabled:opacity-50"
+                    >
+                        <RefreshCw size={16} strokeWidth={3} className={isLoading ? 'animate-spin text-brand-primary-500' : ''} />
+                        Actualizar
+                    </button>
                 </div>
 
-                {/* Product Table */}
-                {isLoading ? (
-                    <div className="flex items-center justify-center rounded-xl bg-white p-12 shadow-lg">
-                        <div className="text-center">
-                            <RefreshCw className="mx-auto h-12 w-12 animate-spin text-indigo-600" />
-                            <p className="mt-4 text-lg font-medium text-gray-600">Cargando productos...</p>
+                {/* Table Area */}
+                <div className="animate-fade-in delay-200">
+                    {isLoading ? (
+                        <div className="text-center py-32 glass-panel rounded-3xl border-dashed border-white/5">
+                            <div className="relative inline-block mb-6">
+                                <div className="absolute inset-0 bg-brand-primary-500/20 blur-2xl rounded-full"></div>
+                                <RefreshCw className="animate-spin text-brand-primary-500 relative z-10" size={48} strokeWidth={2.5} />
+                            </div>
+                            <p className="text-gray-500 font-black uppercase tracking-[0.3em] text-xs">Escaneando inventario...</p>
                         </div>
-                    </div>
-                ) : (
-                    <ProductTable
-                        productos={filteredProductos}
-                        onEdit={handleEditarProducto}
-                        onDelete={handleEliminarProducto}
-                    />
-                )}
+                    ) : (
+                        <div className="glass-panel rounded-[2.5rem] border-white/5 overflow-hidden shadow-2xl shadow-black/40">
+                            <ProductTable
+                                productos={filteredProductos}
+                                onEdit={handleEditarProducto}
+                                onDelete={handleEliminarProducto}
+                            />
+                        </div>
+                    )}
+                </div>
 
-                {/* Product Modal */}
                 <ProductModal
                     isOpen={isModalOpen}
                     onClose={handleCerrarModal}

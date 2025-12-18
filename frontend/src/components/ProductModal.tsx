@@ -1,4 +1,4 @@
-import { X, Save, Package } from 'lucide-react';
+import { X, Save, Package, RefreshCw } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import type { Producto, ProductoFormData, Categoria, Ubicacion } from '../types';
 
@@ -124,256 +124,213 @@ export default function ProductModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div
+                className="absolute inset-0 bg-slate-950/60 backdrop-blur-xl animate-fade-in"
+                onClick={onClose}
+            ></div>
+
+            <div className="relative w-full max-w-2xl glass-panel rounded-[2.5rem] border-white/10 shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[90vh]">
                 {/* Header */}
-                <div className="sticky top-0 z-10 flex items-center justify-between border-b border-gray-200 bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
-                    <div className="flex items-center gap-3">
-                        <div className="rounded-lg bg-white/20 p-2">
-                            <Package className="h-6 w-6 text-white" />
+                <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
+                    <div className="flex items-center gap-4">
+                        <div className="glass-card p-4 rounded-2xl border-white/10 text-brand-primary-400 shadow-lg shadow-brand-primary-500/10">
+                            <Package size={28} strokeWidth={2.5} />
                         </div>
-                        <h2 className="text-2xl font-bold text-white">
-                            {producto ? 'Editar Producto' : 'Nuevo Producto'}
-                        </h2>
+                        <div>
+                            <h2 className="text-2xl font-black text-white tracking-tight uppercase">
+                                {producto ? 'Editar Producto' : 'Nuevo Producto'}
+                            </h2>
+                            <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mt-1">Información detallada del artículo</p>
+                        </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="rounded-lg p-2 text-white transition-colors hover:bg-white/20"
-                        disabled={isSubmitting}
+                        className="p-3 text-gray-500 hover:text-white transition-colors bg-white/5 rounded-2xl border border-white/5 hover:border-white/10"
                     >
-                        <X className="h-6 w-6" />
+                        <X size={20} strokeWidth={3} />
                     </button>
                 </div>
 
-                {/* Form */}
-                <form onSubmit={handleSubmit} className="p-6">
-                    <div className="grid gap-6 md:grid-cols-2">
-                        {/* Nombre */}
-                        <div className="md:col-span-2">
-                            <label className="mb-2 block text-sm font-semibold text-gray-700">
-                                Nombre del Producto *
-                            </label>
-                            <input
-                                type="text"
-                                value={formData.nombre}
-                                onChange={(e) => handleChange('nombre', e.target.value)}
-                                className={`w-full rounded-lg border px-4 py-3 transition-all focus:outline-none focus:ring-2 ${errors.nombre
-                                    ? 'border-red-300 focus:ring-red-500'
-                                    : 'border-gray-300 focus:ring-indigo-500'
-                                    }`}
-                                placeholder="Ej: Cuaderno Profesional"
-                                disabled={isSubmitting}
-                            />
-                            {errors.nombre && (
-                                <p className="mt-1 text-sm text-red-600">{errors.nombre}</p>
-                            )}
+                {/* Form Body - Scrollable */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
+                    <form id="product-form" onSubmit={handleSubmit} className="space-y-8">
+                        {/* Section 1: Basic Info */}
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-3">
+                                <span className="h-4 w-1 bg-brand-primary-500 rounded-full"></span>
+                                <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Información General</h3>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="md:col-span-2 group">
+                                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-brand-primary-400 transition-colors">Nombre del Producto</label>
+                                    <div className="relative">
+                                        <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-600 group-focus-within:text-brand-primary-400 transition-colors">
+                                            <Package size={18} />
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={formData.nombre}
+                                            onChange={(e) => handleChange('nombre', e.target.value)}
+                                            className="w-full pl-12 pr-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-bold"
+                                            placeholder="Ej. Cuaderno Profesional 100 Hojas"
+                                        />
+                                    </div>
+                                    {errors.nombre && <p className="mt-2 text-[10px] font-black text-red-500 uppercase tracking-widest ml-1">{errors.nombre}</p>}
+                                </div>
+
+                                <div className="group">
+                                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-brand-primary-400 transition-colors">Código SKU</label>
+                                    <input
+                                        type="text"
+                                        value={formData.sku}
+                                        onChange={(e) => handleChange('sku', e.target.value)}
+                                        className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-mono font-bold uppercase tracking-widest"
+                                        placeholder="SKU-000"
+                                    />
+                                    {errors.sku && <p className="mt-2 text-[10px] font-black text-red-500 uppercase tracking-widest ml-1">{errors.sku}</p>}
+                                </div>
+
+                                <div className="group">
+                                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-brand-primary-400 transition-colors">Existencia Inicial</label>
+                                    <input
+                                        type="number"
+                                        value={formData.cantidadStock}
+                                        onChange={(e) => handleChange('cantidadStock', parseInt(e.target.value) || 0)}
+                                        className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-bold"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
-                        {/* SKU */}
-                        <div>
-                            <label className="mb-2 block text-sm font-semibold text-gray-700">
-                                SKU *
-                            </label>
-                            <input
-                                type="text"
-                                value={formData.sku}
-                                onChange={(e) => handleChange('sku', e.target.value)}
-                                className={`w-full rounded-lg border px-4 py-3 font-mono transition-all focus:outline-none focus:ring-2 ${errors.sku
-                                    ? 'border-red-300 focus:ring-red-500'
-                                    : 'border-gray-300 focus:ring-indigo-500'
-                                    }`}
-                                placeholder="Ej: CUA-001"
-                                disabled={isSubmitting}
-                            />
-                            {errors.sku && (
-                                <p className="mt-1 text-sm text-red-600">{errors.sku}</p>
-                            )}
+                        {/* Section 2: Pricing */}
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-3">
+                                <span className="h-4 w-1 bg-brand-secondary-500 rounded-full"></span>
+                                <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Costos y Precios</h3>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="group">
+                                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-brand-secondary-400 transition-colors">P. Venta (Q)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={formData.precioVenta}
+                                        onChange={(e) => handleChange('precioVenta', parseFloat(e.target.value) || 0)}
+                                        className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-brand-secondary-500/50 focus:ring-4 focus:ring-brand-secondary-500/10 transition-all font-bold text-lg"
+                                    />
+                                    {errors.precioVenta && <p className="mt-2 text-[10px] font-black text-red-500 uppercase tracking-widest ml-1">{errors.precioVenta}</p>}
+                                </div>
+
+                                <div className="group">
+                                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-brand-secondary-400 transition-colors">P. Mayorista (Q)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={formData.precioMayorista}
+                                        onChange={(e) => handleChange('precioMayorista', parseFloat(e.target.value) || 0)}
+                                        className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-brand-secondary-500/50 focus:ring-4 focus:ring-brand-secondary-500/10 transition-all font-bold text-lg"
+                                    />
+                                </div>
+
+                                <div className="group">
+                                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-brand-secondary-400 transition-colors">P. Costo (Q)</label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={formData.precioCosto}
+                                        onChange={(e) => handleChange('precioCosto', parseFloat(e.target.value) || 0)}
+                                        className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-brand-secondary-500/50 focus:ring-4 focus:ring-brand-secondary-500/10 transition-all font-bold text-lg"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Stock */}
-                        <div>
-                            <label className="mb-2 block text-sm font-semibold text-gray-700">
-                                Stock Inicial *
-                            </label>
-                            <input
-                                type="number"
-                                value={formData.cantidadStock}
-                                onChange={(e) => handleChange('cantidadStock', parseInt(e.target.value) || 0)}
-                                className={`w-full rounded-lg border px-4 py-3 transition-all focus:outline-none focus:ring-2 ${errors.cantidadStock
-                                    ? 'border-red-300 focus:ring-red-500'
-                                    : 'border-gray-300 focus:ring-indigo-500'
-                                    }`}
-                                min="0"
-                                disabled={isSubmitting}
-                            />
-                            {errors.cantidadStock && (
-                                <p className="mt-1 text-sm text-red-600">{errors.cantidadStock}</p>
-                            )}
+                        {/* Section 3: Classification */}
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-3">
+                                <span className="h-4 w-1 bg-indigo-500 rounded-full"></span>
+                                <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Clasificación</h3>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="group">
+                                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-indigo-400 transition-colors">Categoría</label>
+                                    <select
+                                        value={formData.categoriaId}
+                                        onChange={(e) => handleChange('categoriaId', parseInt(e.target.value))}
+                                        className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold appearance-none cursor-pointer"
+                                    >
+                                        <option value={0} className="bg-slate-900">Seleccionar...</option>
+                                        {categorias.map(cat => (
+                                            <option key={cat.categoriaId} value={cat.categoriaId} className="bg-slate-900">{cat.nombre}</option>
+                                        ))}
+                                    </select>
+                                    {errors.categoriaId && <p className="mt-2 text-[10px] font-black text-red-500 uppercase tracking-widest ml-1">{errors.categoriaId}</p>}
+                                </div>
+
+                                <div className="group">
+                                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-indigo-400 transition-colors">Ubicación</label>
+                                    <select
+                                        value={formData.ubicacionId}
+                                        onChange={(e) => handleChange('ubicacionId', parseInt(e.target.value))}
+                                        className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-indigo-500/50 focus:ring-4 focus:ring-indigo-500/10 transition-all font-bold appearance-none cursor-pointer"
+                                    >
+                                        <option value={0} className="bg-slate-900">Seleccionar...</option>
+                                        {ubicaciones.map(ubi => (
+                                            <option key={ubi.ubicacionId} value={ubi.ubicacionId} className="bg-slate-900">{ubi.nombreCorto}</option>
+                                        ))}
+                                    </select>
+                                    {errors.ubicacionId && <p className="mt-2 text-[10px] font-black text-red-500 uppercase tracking-widest ml-1">{errors.ubicacionId}</p>}
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Precio Venta */}
-                        <div>
-                            <label className="mb-2 block text-sm font-semibold text-gray-700">
-                                Precio Venta *
-                            </label>
-                            <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={formData.precioVenta}
-                                    onChange={(e) => handleChange('precioVenta', parseFloat(e.target.value) || 0)}
-                                    className={`w-full rounded-lg border px-4 py-3 pl-8 transition-all focus:outline-none focus:ring-2 ${errors.precioVenta
-                                        ? 'border-red-300 focus:ring-red-500'
-                                        : 'border-gray-300 focus:ring-indigo-500'
-                                        }`}
-                                    min="0"
-                                    disabled={isSubmitting}
+                        {/* Section 4: Description */}
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-3">
+                                <span className="h-4 w-1 bg-gray-500 rounded-full"></span>
+                                <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em]">Adicional</h3>
+                            </div>
+
+                            <div className="group">
+                                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 ml-1 group-focus-within:text-white transition-colors">Descripción del Producto</label>
+                                <textarea
+                                    value={formData.descripcion}
+                                    onChange={(e) => handleChange('descripcion', e.target.value)}
+                                    className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-white/30 focus:ring-4 focus:ring-white/5 transition-all font-bold min-h-[120px] resize-none"
+                                    placeholder="Detalles técnicos, marca, material, etc..."
                                 />
                             </div>
-                            {errors.precioVenta && (
-                                <p className="mt-1 text-sm text-red-600">{errors.precioVenta}</p>
-                            )}
                         </div>
+                    </form>
+                </div>
 
-                        {/* Precio Mayorista */}
-                        <div>
-                            <label className="mb-2 block text-sm font-semibold text-gray-700">
-                                Precio Mayorista *
-                            </label>
-                            <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={formData.precioMayorista}
-                                    onChange={(e) => handleChange('precioMayorista', parseFloat(e.target.value) || 0)}
-                                    className={`w-full rounded-lg border px-4 py-3 pl-8 transition-all focus:outline-none focus:ring-2 ${errors.precioMayorista
-                                        ? 'border-red-300 focus:ring-red-500'
-                                        : 'border-gray-300 focus:ring-indigo-500'
-                                        }`}
-                                    min="0"
-                                    disabled={isSubmitting}
-                                />
-                            </div>
-                            {errors.precioMayorista && (
-                                <p className="mt-1 text-sm text-red-600">{errors.precioMayorista}</p>
-                            )}
-                        </div>
-
-                        {/* Precio Costo */}
-                        <div>
-                            <label className="mb-2 block text-sm font-semibold text-gray-700">
-                                Precio Costo
-                            </label>
-                            <div className="relative">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">$</span>
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={formData.precioCosto}
-                                    onChange={(e) => handleChange('precioCosto', parseFloat(e.target.value) || 0)}
-                                    className={`w-full rounded-lg border px-4 py-3 pl-8 transition-all focus:outline-none focus:ring-2 ${errors.precioCosto
-                                        ? 'border-red-300 focus:ring-red-500'
-                                        : 'border-gray-300 focus:ring-indigo-500'
-                                        }`}
-                                    min="0"
-                                    disabled={isSubmitting}
-                                />
-                            </div>
-                            {errors.precioCosto && (
-                                <p className="mt-1 text-sm text-red-600">{errors.precioCosto}</p>
-                            )}
-                        </div>
-
-                        {/* Categoría */}
-                        <div>
-                            <label className="mb-2 block text-sm font-semibold text-gray-700">
-                                Categoría *
-                            </label>
-                            <select
-                                value={formData.categoriaId}
-                                onChange={(e) => handleChange('categoriaId', parseInt(e.target.value))}
-                                className={`w-full rounded-lg border px-4 py-3 transition-all focus:outline-none focus:ring-2 ${errors.categoriaId
-                                    ? 'border-red-300 focus:ring-red-500'
-                                    : 'border-gray-300 focus:ring-indigo-500'
-                                    }`}
-                                disabled={isSubmitting}
-                            >
-                                <option value={0}>Seleccionar categoría</option>
-                                {categorias.map((cat) => (
-                                    <option key={cat.categoriaId} value={cat.categoriaId}>
-                                        {cat.nombre}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.categoriaId && (
-                                <p className="mt-1 text-sm text-red-600">{errors.categoriaId}</p>
-                            )}
-                        </div>
-
-                        {/* Ubicación */}
-                        <div>
-                            <label className="mb-2 block text-sm font-semibold text-gray-700">
-                                Ubicación *
-                            </label>
-                            <select
-                                value={formData.ubicacionId}
-                                onChange={(e) => handleChange('ubicacionId', parseInt(e.target.value))}
-                                className={`w-full rounded-lg border px-4 py-3 transition-all focus:outline-none focus:ring-2 ${errors.ubicacionId
-                                    ? 'border-red-300 focus:ring-red-500'
-                                    : 'border-gray-300 focus:ring-indigo-500'
-                                    }`}
-                                disabled={isSubmitting}
-                            >
-                                <option value={0}>Seleccionar ubicación</option>
-                                {ubicaciones.map((ubi) => (
-                                    <option key={ubi.ubicacionId} value={ubi.ubicacionId}>
-                                        {ubi.nombreCorto}
-                                    </option>
-                                ))}
-                            </select>
-                            {errors.ubicacionId && (
-                                <p className="mt-1 text-sm text-red-600">{errors.ubicacionId}</p>
-                            )}
-                        </div>
-
-                        {/* Descripción */}
-                        <div className="md:col-span-2">
-                            <label className="mb-2 block text-sm font-semibold text-gray-700">
-                                Descripción
-                            </label>
-                            <textarea
-                                value={formData.descripcion}
-                                onChange={(e) => handleChange('descripcion', e.target.value)}
-                                className="w-full rounded-lg border border-gray-300 px-4 py-3 transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                rows={3}
-                                placeholder="Descripción detallada del producto..."
-                                disabled={isSubmitting}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Footer Buttons */}
-                    <div className="mt-8 flex gap-3 border-t border-gray-200 pt-6">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 rounded-lg border-2 border-gray-300 px-6 py-3 font-semibold text-gray-700 transition-all hover:bg-gray-50"
-                            disabled={isSubmitting}
-                        >
-                            Cancelar
-                        </button>
-                        <button
-                            type="submit"
-                            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:shadow-xl disabled:opacity-50"
-                            disabled={isSubmitting}
-                        >
-                            <Save className="h-5 w-5" />
-                            {isSubmitting ? 'Guardando...' : 'Guardar Producto'}
-                        </button>
-                    </div>
-                </form>
+                {/* Footer Actions */}
+                <div className="p-8 border-t border-white/5 bg-white/[0.02] flex gap-4">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="flex-1 px-8 py-4 glass-card border-white/5 text-gray-400 hover:text-white rounded-2xl transition-all font-black uppercase tracking-widest text-xs active:scale-95"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        form="product-form"
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="flex-[2] bg-brand-primary-500 hover:bg-brand-primary-400 text-white px-8 py-4 rounded-2xl font-black shadow-xl shadow-brand-primary-600/20 flex items-center justify-center gap-3 transition-all active:scale-95 uppercase tracking-widest text-xs disabled:opacity-50 border border-brand-primary-400/20"
+                    >
+                        {isSubmitting ? (
+                            <RefreshCw size={18} className="animate-spin" />
+                        ) : (
+                            <Save size={18} strokeWidth={2.5} />
+                        )}
+                        {isSubmitting ? 'Procesando...' : (producto ? 'Guardar Cambios' : 'Crear Producto')}
+                    </button>
+                </div>
             </div>
         </div>
     );
