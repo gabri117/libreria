@@ -64,7 +64,7 @@ export default function Navbar() {
                             to="/ventas"
                             className={`
                                 flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-200 text-xs font-semibold whitespace-nowrap
-                                ${isActive('/ventas') ? 'bg-gray-800 text-white ring-1 ring-gray-700' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
+                                ${isActive('/ventas') ? 'bg-brand-primary-500 text-white shadow-lg shadow-brand-primary-500/30' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
                             `}
                         >
                             <Receipt className="h-4 w-4" />

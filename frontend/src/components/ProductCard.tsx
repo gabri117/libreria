@@ -69,7 +69,7 @@ export const ProductCard = ({ product, onAdd }: ProductCardProps) => {
                 </div>
             </div>
             {/* Subtle glow effect */}
-            <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-brand-primary-500/5 rounded-full blur-3xl group-hover:bg-brand-primary-500/10 transition-all duration-500"></div>
+            <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-brand-primary-500/5 rounded-full blur-3xl group-hover:bg-brand-primary-500/10 transition-all duration-500 pointer-events-none"></div>
         </div>
     );
 };
