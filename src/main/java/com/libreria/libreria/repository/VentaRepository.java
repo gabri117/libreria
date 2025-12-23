@@ -17,6 +17,8 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
         List<Venta> findBySesion_SesionIdAndEstadoAndMetodoPago(Integer sesionId, EstadoVenta estado,
                         MetodoPago metodoPago);
 
+        List<Venta> findAllByOrderByFechaVentaDesc();
+
         // Filter by date range
         List<Venta> findByFechaVentaBetween(LocalDateTime fechaInicio, LocalDateTime fechaFin);
 

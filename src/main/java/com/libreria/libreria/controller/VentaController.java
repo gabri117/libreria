@@ -92,4 +92,16 @@ public class VentaController {
         List<VentasPorMetodoDTO> ventasPorMetodo = ventaService.obtenerVentasPorMetodo(fechaInicio, fechaFin);
         return new ResponseEntity<>(ventasPorMetodo, HttpStatus.OK);
     }
+
+    @GetMapping("/{id}/pdf")
+    public ResponseEntity<byte[]> descargarFacturaPdf(@PathVariable Integer id) {
+        byte[] pdfBytes = ventaService.generarReportePdf(id);
+
+        org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+        headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "factura_venta_" + id + ".pdf");
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+        return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+    }
 }

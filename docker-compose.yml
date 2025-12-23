@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: libreria-db
+    restart: always
+    environment:
+      POSTGRES_DB: bd_libreria
+      POSTGRES_USER: user_libreria
+      POSTGRES_PASSWORD: password_libreria
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: .
+    container_name: libreria-backend
+    restart: always
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/bd_libreria
+      - SPRING_DATASOURCE_USERNAME=user_libreria
+      - SPRING_DATASOURCE_PASSWORD=password_libreria
+      - JWT_SECRET=libreria_secret_key_ultra_secure_for_production_2025
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build: ./frontend
+    container_name: libreria-frontend
+    restart: always
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  postgres_data:

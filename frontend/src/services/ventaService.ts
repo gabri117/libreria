@@ -33,3 +33,19 @@ export const anularVenta = async (id: number, request: AnularVentaRequest): Prom
     const response = await axiosClient.put<VentaDTO>(`/ventas/${id}/anular`, request);
     return response.data;
 };
+
+export const descargarFactura = async (id: number): Promise<void> => {
+    const response = await axiosClient.get(`/ventas/${id}/pdf`, {
+        responseType: 'blob'
+    });
+
+    // Create a link to download the file
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `factura_venta_${id}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+};

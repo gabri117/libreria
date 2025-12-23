@@ -141,7 +141,7 @@ public class VentaServiceImpl implements VentaService {
 
         @Override
         public List<VentaDTO> listarVentas() {
-                List<Venta> ventas = ventaRepository.findAll();
+                List<Venta> ventas = ventaRepository.findAllByOrderByFechaVentaDesc();
                 return ventas.stream().map(this::mapToDTO).collect(Collectors.toList());
         }
 
@@ -309,5 +309,190 @@ public class VentaServiceImpl implements VentaService {
                                                 .montoTotal((BigDecimal) row[2])
                                                 .build())
                                 .collect(Collectors.toList());
+        }
+
+        @Override
+        public byte[] generarReportePdf(Integer ventaId) {
+                Venta venta = ventaRepository.findById(ventaId)
+                                .orElseThrow(() -> new RuntimeException("Venta no encontrada ID: " + ventaId));
+
+                try (java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream()) {
+                        com.lowagie.text.Document document = new com.lowagie.text.Document(
+                                        com.lowagie.text.PageSize.A4);
+                        com.lowagie.text.pdf.PdfWriter.getInstance(document, out);
+                        document.open();
+
+                        // Brand Colors
+                        java.awt.Color brandColor = new java.awt.Color(14, 165, 233); // #0ea5e9
+                        java.awt.Color lightGray = new java.awt.Color(241, 245, 249);
+
+                        // Fonts
+                        com.lowagie.text.Font fontTitle = com.lowagie.text.FontFactory
+                                        .getFont(com.lowagie.text.FontFactory.HELVETICA_BOLD, 22, brandColor);
+                        com.lowagie.text.Font fontSubTitle = com.lowagie.text.FontFactory.getFont(
+                                        com.lowagie.text.FontFactory.HELVETICA_BOLD, 14, java.awt.Color.DARK_GRAY);
+                        com.lowagie.text.Font fontHeader = com.lowagie.text.FontFactory
+                                        .getFont(com.lowagie.text.FontFactory.HELVETICA_BOLD, 11, java.awt.Color.WHITE);
+                        com.lowagie.text.Font fontNormal = com.lowagie.text.FontFactory
+                                        .getFont(com.lowagie.text.FontFactory.HELVETICA, 10, java.awt.Color.BLACK);
+                        com.lowagie.text.Font fontBold = com.lowagie.text.FontFactory
+                                        .getFont(com.lowagie.text.FontFactory.HELVETICA_BOLD, 10, java.awt.Color.BLACK);
+
+                        // Header Table (Logo and Invoice Info)
+                        com.lowagie.text.pdf.PdfPTable headerTable = new com.lowagie.text.pdf.PdfPTable(2);
+                        headerTable.setWidthPercentage(100);
+                        headerTable.setSpacingAfter(20);
+
+                        // Try to add Logo
+                        try {
+                                // Try absolute path resolution
+                                String userDir = System.getProperty("user.dir");
+                                // If running from root standard spring boot directory
+                                java.nio.file.Path logoPath = java.nio.file.Paths.get(userDir, "frontend", "public",
+                                                "logo.png");
+
+                                if (!java.nio.file.Files.exists(logoPath)) {
+                                        // Fallback for some IDE configs
+                                        logoPath = java.nio.file.Paths.get(userDir, "src", "main", "resources",
+                                                        "static", "logo.png");
+                                }
+
+                                if (java.nio.file.Files.exists(logoPath)) {
+                                        com.lowagie.text.Image logo = com.lowagie.text.Image
+                                                        .getInstance(logoPath.toAbsolutePath().toString());
+                                        logo.scaleToFit(120, 60);
+                                        com.lowagie.text.pdf.PdfPCell logoCell = new com.lowagie.text.pdf.PdfPCell(
+                                                        logo);
+                                        logoCell.setBorder(com.lowagie.text.Rectangle.NO_BORDER);
+                                        headerTable.addCell(logoCell);
+                                } else {
+                                        throw new java.io.FileNotFoundException("Logo not found at " + logoPath);
+                                }
+                        } catch (Exception e) {
+                                com.lowagie.text.pdf.PdfPCell titleCell = new com.lowagie.text.pdf.PdfPCell(
+                                                new com.lowagie.text.Phrase("LIBRERIA MARÍA Y JOSÉ", fontTitle));
+                                titleCell.setBorder(com.lowagie.text.Rectangle.NO_BORDER);
+                                headerTable.addCell(titleCell);
+                        }
+
+                        com.lowagie.text.pdf.PdfPCell infoCell = new com.lowagie.text.pdf.PdfPCell();
+                        infoCell.setBorder(com.lowagie.text.Rectangle.NO_BORDER);
+                        infoCell.setHorizontalAlignment(com.lowagie.text.Element.ALIGN_RIGHT);
+                        infoCell.addElement(new com.lowagie.text.Paragraph("FACTURA DE VENTA", fontSubTitle));
+                        infoCell.addElement(new com.lowagie.text.Paragraph("No. de Factura: #" + venta.getVentaId(),
+                                        fontBold));
+                        infoCell.addElement(
+                                        new com.lowagie.text.Paragraph(
+                                                        "Fecha: " + venta.getFechaVenta()
+                                                                        .format(java.time.format.DateTimeFormatter
+                                                                                        .ofPattern("dd/MM/yyyy HH:mm")),
+                                                        fontNormal));
+                        headerTable.addCell(infoCell);
+
+                        document.add(headerTable);
+
+                        // Horizontal Line
+                        com.lowagie.text.pdf.draw.LineSeparator line = new com.lowagie.text.pdf.draw.LineSeparator();
+                        line.setLineColor(brandColor);
+                        document.add(line);
+                        document.add(new com.lowagie.text.Paragraph(" ")); // Spacer
+
+                        // Client and Info
+                        document.add(new com.lowagie.text.Paragraph("DATOS DEL CLIENTE", fontBold));
+                        document.add(new com.lowagie.text.Paragraph("Nombre: " + venta.getCliente().getNombreCompleto(),
+                                        fontNormal));
+                        document.add(new com.lowagie.text.Paragraph("NIT: "
+                                        + (venta.getCliente().getNit() != null ? venta.getCliente().getNit() : "C/F"),
+                                        fontNormal));
+                        document.add(new com.lowagie.text.Paragraph(" "));
+
+                        document.add(new com.lowagie.text.Paragraph("DATOS DE LA VENTA", fontBold));
+                        document.add(new com.lowagie.text.Paragraph(
+                                        "Vendedor: " + venta.getUsuario().getNombreCompleto(), fontNormal));
+                        document.add(new com.lowagie.text.Paragraph("Método de Pago: " + venta.getMetodoPago(),
+                                        fontNormal));
+                        document.add(new com.lowagie.text.Paragraph(" "));
+
+                        // Table
+                        com.lowagie.text.pdf.PdfPTable table = new com.lowagie.text.pdf.PdfPTable(4);
+                        table.setWidthPercentage(100);
+                        table.setWidths(new float[] { 5, 1, 2, 2 });
+                        table.setSpacingBefore(10);
+
+                        // Table Headers
+                        addTableHeader(table, "Producto", fontHeader, brandColor);
+                        addTableHeader(table, "Cant.", fontHeader, brandColor);
+                        addTableHeader(table, "Precio U.", fontHeader, brandColor);
+                        addTableHeader(table, "Subtotal", fontHeader, brandColor);
+
+                        // Table Data
+                        boolean alternate = false;
+                        for (DetalleVenta detalle : venta.getDetalles()) {
+                                java.awt.Color bgColor = alternate ? lightGray : java.awt.Color.WHITE;
+                                addTableCell(table, detalle.getProducto().getNombre(), fontNormal, bgColor);
+                                addTableCell(table, String.valueOf(detalle.getCantidad()), fontNormal, bgColor);
+                                addTableCell(table, String.format("Q %.2f", detalle.getPrecioUnitario()), fontNormal,
+                                                bgColor);
+                                addTableCell(table, String.format("Q %.2f", detalle.getSubtotal()), fontNormal,
+                                                bgColor);
+                                alternate = !alternate;
+                        }
+
+                        document.add(table);
+                        document.add(new com.lowagie.text.Paragraph(" ")); // Spacer
+
+                        // Total
+                        com.lowagie.text.pdf.PdfPTable totalTable = new com.lowagie.text.pdf.PdfPTable(2);
+                        totalTable.setWidthPercentage(40);
+                        totalTable.setHorizontalAlignment(com.lowagie.text.Element.ALIGN_RIGHT);
+
+                        com.lowagie.text.pdf.PdfPCell labelCell = new com.lowagie.text.pdf.PdfPCell(
+                                        new com.lowagie.text.Phrase("TOTAL:", fontHeader));
+                        labelCell.setBackgroundColor(brandColor);
+                        labelCell.setPadding(8);
+                        labelCell.setBorder(com.lowagie.text.Rectangle.NO_BORDER);
+                        totalTable.addCell(labelCell);
+
+                        com.lowagie.text.pdf.PdfPCell valueCell = new com.lowagie.text.pdf.PdfPCell(
+                                        new com.lowagie.text.Phrase(String.format("Q %.2f", venta.getMontoTotal()),
+                                                        fontSubTitle));
+                        valueCell.setPadding(8);
+                        valueCell.setBorder(com.lowagie.text.Rectangle.NO_BORDER);
+                        valueCell.setHorizontalAlignment(com.lowagie.text.Element.ALIGN_RIGHT);
+                        totalTable.addCell(valueCell);
+
+                        document.add(totalTable);
+
+                        // Footer
+                        document.add(new com.lowagie.text.Paragraph(" "));
+                        com.lowagie.text.Paragraph footer = new com.lowagie.text.Paragraph(
+                                        "¡Gracias por su compra en Librería María y José!", fontNormal);
+                        footer.setAlignment(com.lowagie.text.Element.ALIGN_CENTER);
+                        document.add(footer);
+
+                        document.close();
+                        return out.toByteArray();
+                } catch (Exception e) {
+                        throw new RuntimeException("Error al generar PDF", e);
+                }
+        }
+
+        private void addTableHeader(com.lowagie.text.pdf.PdfPTable table, String headerTitle,
+                        com.lowagie.text.Font font, java.awt.Color bgColor) {
+                com.lowagie.text.pdf.PdfPCell header = new com.lowagie.text.pdf.PdfPCell();
+                header.setBackgroundColor(bgColor);
+                header.setPadding(8);
+                header.setPhrase(new com.lowagie.text.Phrase(headerTitle, font));
+                table.addCell(header);
+        }
+
+        private void addTableCell(com.lowagie.text.pdf.PdfPTable table, String text, com.lowagie.text.Font font,
+                        java.awt.Color bgColor) {
+                com.lowagie.text.pdf.PdfPCell cell = new com.lowagie.text.pdf.PdfPCell(
+                                new com.lowagie.text.Phrase(text, font));
+                cell.setBackgroundColor(bgColor);
+                cell.setPadding(8);
+                cell.setBorderColor(new java.awt.Color(226, 232, 240));
+                table.addCell(cell);
         }
 }

@@ -11,21 +11,23 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface VentaService {
-    VentaDTO crearVenta(VentaDTO ventaDTO);
+        VentaDTO crearVenta(VentaDTO ventaDTO);
 
-    List<VentaDTO> listarVentas();
+        List<VentaDTO> listarVentas();
 
-    VentaDTO obtenerVentaPorId(Integer ventaId);
+        VentaDTO obtenerVentaPorId(Integer ventaId);
 
-    List<VentaDTO> filtrarVentas(LocalDateTime fechaInicio, LocalDateTime fechaFin,
-            Integer clienteId, MetodoPago metodoPago, EstadoVenta estado);
+        List<VentaDTO> filtrarVentas(LocalDateTime fechaInicio, LocalDateTime fechaFin,
+                        Integer clienteId, MetodoPago metodoPago, EstadoVenta estado);
 
-    VentaDTO anularVenta(Integer ventaId, Integer usuarioId, String motivo);
+        VentaDTO anularVenta(Integer ventaId, Integer usuarioId, String motivo);
 
-    EstadisticasVentasDTO obtenerEstadisticas(LocalDateTime fechaInicio, LocalDateTime fechaFin);
+        EstadisticasVentasDTO obtenerEstadisticas(LocalDateTime fechaInicio, LocalDateTime fechaFin);
 
-    List<ProductoMasVendidoDTO> obtenerProductosMasVendidos(LocalDateTime fechaInicio, LocalDateTime fechaFin,
-            Integer limite);
+        List<ProductoMasVendidoDTO> obtenerProductosMasVendidos(LocalDateTime fechaInicio, LocalDateTime fechaFin,
+                        Integer limite);
 
-    List<VentasPorMetodoDTO> obtenerVentasPorMetodo(LocalDateTime fechaInicio, LocalDateTime fechaFin);
+        List<VentasPorMetodoDTO> obtenerVentasPorMetodo(LocalDateTime fechaInicio, LocalDateTime fechaFin);
+
+        byte[] generarReportePdf(Integer ventaId);
 }

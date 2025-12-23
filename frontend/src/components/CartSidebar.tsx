@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { Trash2, ShoppingBag, Minus, Plus, CreditCard, Loader2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { ClientSelector } from './ClientSelector';
-import { crearVenta } from '../services/ventaService';
+import { crearVenta, descargarFactura } from '../services/ventaService';
 import { toast } from 'react-hot-toast';
 import { useSession } from '../context/SessionContext';
 import type { VentaDTO, DetalleVentaDTO } from '../types';
+import { FileText } from 'lucide-react';
 
 export const CartSidebar = () => {
     const { items, totalVenta, eliminarProducto, actualizarCantidad, limpiarCarrito, clienteSeleccionado } = useCart();
@@ -40,9 +41,61 @@ export const CartSidebar = () => {
                 detalles
             };
 
-            await crearVenta(ventaPayload);
-            toast.success('¡Venta registrada con éxito!');
+            const nuevaVenta = await crearVenta(ventaPayload);
             limpiarCarrito();
+
+            toast.custom((t) => (
+                <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full glass-panel border border-brand-primary-500/30 shadow-2xl rounded-2xl pointer-events-auto flex overflow-hidden`}>
+                    <div className="flex-1 w-0 p-6">
+                        <div className="flex items-start">
+                            <div className="flex-shrink-0 pt-0.5">
+                                <div className="h-12 w-12 rounded-2xl bg-brand-primary-500/20 flex items-center justify-center border border-brand-primary-500/30">
+                                    <ShoppingBag className="h-6 w-6 text-brand-primary-400" />
+                                </div>
+                            </div>
+                            <div className="ml-4 flex-1">
+                                <p className="text-sm font-black text-white uppercase tracking-wider">
+                                    ¡Venta Exitosa!
+                                </p>
+                                <p className="mt-1 text-xs font-bold text-gray-400">
+                                    Factura #{nuevaVenta.ventaId} generada
+                                </p>
+                                <div className="mt-3 flex items-center gap-2">
+                                    <span className="text-[10px] font-black text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-md uppercase tracking-tighter border border-emerald-400/20">
+                                        Completada
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex flex-col border-l border-white/5 bg-white/5">
+                        <button
+                            onClick={async () => {
+                                if (nuevaVenta.ventaId) {
+                                    toast.dismiss(t.id);
+                                    try {
+                                        await descargarFactura(nuevaVenta.ventaId);
+                                        toast.success('Factura descargada', { style: { background: '#1e293b', color: '#fff' } });
+                                    } catch (e) {
+                                        toast.error('Error al descargar factura');
+                                    }
+                                }
+                            }}
+                            className="flex-1 px-6 py-4 flex items-center justify-center text-xs font-black text-brand-primary-400 hover:bg-brand-primary-500 hover:text-white transition-all uppercase tracking-widest gap-2"
+                        >
+                            <FileText size={18} />
+                            Factura
+                        </button>
+                        <button
+                            onClick={() => toast.dismiss(t.id)}
+                            className="flex-1 px-6 py-4 flex items-center justify-center text-[10px] font-bold text-gray-500 hover:bg-white/10 transition-all uppercase tracking-[0.2em] border-t border-white/5"
+                        >
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            ), { duration: 6000 });
+
         } catch (error) {
             console.error(error);
             toast.error('Error al procesar la venta');

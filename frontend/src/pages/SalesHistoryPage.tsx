@@ -6,7 +6,7 @@ import {
     ArrowRight
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import { filtrarVentas, obtenerVentas } from '../services/ventaService';
+import { filtrarVentas, obtenerVentas, descargarFactura } from '../services/ventaService';
 import type { VentaDTO, FiltrosVenta, MetodoPago, EstadoVenta } from '../types';
 import { SaleDetailModal } from '../components/Sales/SaleDetailModal';
 import { VoidSaleModal } from '../components/Sales/VoidSaleModal';
@@ -132,8 +132,8 @@ export const SalesHistoryPage = () => {
                         <button
                             onClick={() => setShowFilters(!showFilters)}
                             className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 ${showFilters
-                                    ? 'bg-brand-primary-500 text-white shadow-lg shadow-brand-primary-500/30'
-                                    : 'bg-white/5 text-gray-400 hover:bg-white/10 border border-white/5'
+                                ? 'bg-brand-primary-500 text-white shadow-lg shadow-brand-primary-500/30'
+                                : 'bg-white/5 text-gray-400 hover:bg-white/10 border border-white/5'
                                 }`}
                         >
                             <Filter size={18} />
@@ -320,14 +320,30 @@ export const SalesHistoryPage = () => {
                                         </td>
                                         <td className="px-6 py-5 text-center">
                                             <span className={`inline-flex px-3 py-1.5 text-[10px] font-black rounded-lg border uppercase tracking-wider ${venta.estado === 'Completada'
-                                                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                                    : 'bg-red-500/10 text-red-400 border-red-500/20 opacity-70'
+                                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                                : 'bg-red-500/10 text-red-400 border-red-500/20 opacity-70'
                                                 }`}>
                                                 {venta.estado}
                                             </span>
                                         </td>
                                         <td className="px-6 py-5">
                                             <div className="flex gap-2 justify-end">
+                                                <button
+                                                    onClick={async () => {
+                                                        if (venta.ventaId) {
+                                                            try {
+                                                                await descargarFactura(venta.ventaId);
+                                                                toast.success('Factura descargada');
+                                                            } catch (e) {
+                                                                toast.error('Error al descargar factura');
+                                                            }
+                                                        }
+                                                    }}
+                                                    className="p-2.5 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl transition-all active:scale-95 border border-emerald-500/20"
+                                                    title="Descargar Factura PDF"
+                                                >
+                                                    <FileText size={18} strokeWidth={2.5} />
+                                                </button>
                                                 <button
                                                     onClick={() => setSelectedSale(venta)}
                                                     className="p-2.5 bg-brand-primary-500/10 text-brand-primary-400 hover:bg-brand-primary-500 hover:text-white rounded-xl transition-all active:scale-95 border border-brand-primary-500/20"
