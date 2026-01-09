@@ -26,14 +26,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        // Init auth from local storage
-        const storedUser = localStorage.getItem('pos_user');
+        // Init auth from session storage (clears when window closes)
+        const storedUser = sessionStorage.getItem('pos_user');
         if (storedUser) {
             try {
                 setUser(JSON.parse(storedUser));
             } catch (e) {
                 console.error("Failed to parse user from storage", e);
-                localStorage.removeItem('pos_user');
+                sessionStorage.removeItem('pos_user');
             }
         }
         setIsLoading(false);
@@ -41,9 +41,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const login = (userData: User) => {
         setUser(userData);
-        localStorage.setItem('pos_user', JSON.stringify(userData));
+        sessionStorage.setItem('pos_user', JSON.stringify(userData));
         if (userData.token) {
-            localStorage.setItem('token', userData.token);
+            sessionStorage.setItem('token', userData.token);
         }
         toast.success(`Bienvenido, ${userData.nombreCompleto}`);
         navigate('/');
@@ -51,8 +51,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const logout = () => {
         setUser(null);
-        localStorage.removeItem('pos_user');
-        localStorage.removeItem('token');
+        sessionStorage.removeItem('pos_user');
+        sessionStorage.removeItem('token');
         navigate('/login');
         toast.success('Sesión cerrada correctamente');
     };
