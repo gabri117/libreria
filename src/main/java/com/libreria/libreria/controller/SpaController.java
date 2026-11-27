@@ -16,7 +16,8 @@ public class SpaController {
             "/ajustes",
             "/clientes",
             "/catalogos",
-            "/usuarios"
+            "/usuarios",
+            "/auditoria"
     })
     public String forwardToIndex() {
         return "forward:/index.html";

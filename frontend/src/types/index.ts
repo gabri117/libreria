@@ -193,4 +193,28 @@ export interface AjusteInventarioDTO {
     stockResultante?: number;
 }
 
+export type TipoAccion = 'LOGIN' | 'LOGOUT' | 'CREATE' | 'UPDATE' | 'DELETE' | 'ANULAR_VENTA';
+
+export interface AuditLogDTO {
+    auditId: number;
+    usuarioId?: number;
+    usuarioNombre?: string;
+    accion: TipoAccion;
+    entidad: string;
+    entidadId?: number;
+    detalles?: string;
+    fechaAccion: string;
+    ipAddress?: string;
+}
+
+export interface PageResponse<T> {
+    content: T[];
+    totalElements: number;
+    totalPages: number;
+    number: number;
+    size: number;
+    first: boolean;
+    last: boolean;
+}
+
 

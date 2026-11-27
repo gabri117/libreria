@@ -9,6 +9,7 @@ import { SalesHistoryPage } from './pages/SalesHistoryPage';
 import { CashHistoryPage } from './pages/CashHistoryPage';
 import { PurchasesPage } from './pages/PurchasesPage';
 import { InventoryAdjustmentsPage } from './pages/InventoryAdjustmentsPage';
+import { AuditLogPage } from './pages/AuditLogPage';
 import InventoryPage from './pages/InventoryPage';
 import ClientsPage from './pages/ClientsPage';
 import CatalogsPage from './pages/CatalogsPage';
@@ -84,6 +85,14 @@ function App() {
                   element={
                     <ProtectedRoute requiredRole="Administrador">
                       <UsersPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/auditoria"
+                  element={
+                    <ProtectedRoute requiredRole="Administrador">
+                      <AuditLogPage />
                     </ProtectedRoute>
                   }
                 />
