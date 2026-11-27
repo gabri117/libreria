@@ -7,6 +7,8 @@ import { POSPage } from './pages/POSPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { SalesHistoryPage } from './pages/SalesHistoryPage';
 import { CashHistoryPage } from './pages/CashHistoryPage';
+import { PurchasesPage } from './pages/PurchasesPage';
+import { InventoryAdjustmentsPage } from './pages/InventoryAdjustmentsPage';
 import InventoryPage from './pages/InventoryPage';
 import ClientsPage from './pages/ClientsPage';
 import CatalogsPage from './pages/CatalogsPage';
@@ -61,6 +63,22 @@ function App() {
                 <Route path="/catalogos" element={<CatalogsPage />} />
 
                 {/* Rutas de Administrador */}
+                <Route
+                  path="/compras"
+                  element={
+                    <ProtectedRoute requiredRole="Administrador">
+                      <PurchasesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/ajustes"
+                  element={
+                    <ProtectedRoute requiredRole="Administrador">
+                      <InventoryAdjustmentsPage />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route
                   path="/usuarios"
                   element={
