@@ -1,5 +1,11 @@
 import axiosClient from '../api/axiosClient';
-import type { VentaDTO, FiltrosVenta, AnularVentaRequest } from '../types';
+import type {
+    VentaDTO,
+    FiltrosVenta,
+    AnularVentaRequest,
+    ProductoMasVendidoDTO,
+    VentasPorMetodoDTO
+} from '../types';
 
 export const crearVenta = async (venta: VentaDTO): Promise<VentaDTO> => {
     const response = await axiosClient.post<VentaDTO>('/ventas', venta);
@@ -48,4 +54,27 @@ export const descargarFactura = async (id: number): Promise<void> => {
     link.click();
     link.remove();
     window.URL.revokeObjectURL(url);
+};
+
+export const obtenerProductosMasVendidos = async (
+    fechaInicio: string,
+    fechaFin: string,
+    limite = 5
+): Promise<ProductoMasVendidoDTO[]> => {
+    const params = new URLSearchParams({
+        fechaInicio,
+        fechaFin,
+        limite: String(limite)
+    });
+    const response = await axiosClient.get<ProductoMasVendidoDTO[]>(`/ventas/productos-mas-vendidos?${params.toString()}`);
+    return response.data;
+};
+
+export const obtenerVentasPorMetodo = async (
+    fechaInicio: string,
+    fechaFin: string
+): Promise<VentasPorMetodoDTO[]> => {
+    const params = new URLSearchParams({ fechaInicio, fechaFin });
+    const response = await axiosClient.get<VentasPorMetodoDTO[]>(`/ventas/ventas-por-metodo?${params.toString()}`);
+    return response.data;
 };

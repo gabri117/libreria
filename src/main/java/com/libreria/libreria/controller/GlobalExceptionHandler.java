@@ -5,6 +5,7 @@ import com.libreria.libreria.exception.StockInsuficienteException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,6 +15,31 @@ import java.util.stream.Collectors;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDenied(AccessDeniedException ex, HttpServletRequest request) {
+        ErrorResponse error = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.FORBIDDEN.value())
+                .error("Acceso Denegado")
+                .message("No tienes permisos para realizar esta acción.")
+                .path(request.getRequestURI())
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex,
+            HttpServletRequest request) {
+        ErrorResponse error = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error("Solicitud Inválida")
+                .message(ex.getMessage() != null ? ex.getMessage() : "Parámetros inválidos")
+                .path(request.getRequestURI())
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
 
     @ExceptionHandler(StockInsuficienteException.class)
     public ResponseEntity<ErrorResponse> handleStockInsuficiente(StockInsuficienteException ex,
@@ -28,28 +54,26 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(RuntimeException.class) // Generic handler for "Not Found" etc if thrown as RuntimeException
+    @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException ex, HttpServletRequest request) {
-        // Simple logic: if message contains "no encontrado", treat as 404, else 400 or
-        // 500
-        // For production, custom exceptions (ResourceNotFoundException) are better, but
-        // this fits the current 'RuntimeException' usage in Services.
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         String errorLabel = "Internal Server Error";
+        String message = ex.getMessage() != null ? ex.getMessage() : "Error interno del servidor";
+        String lowerMsg = message.toLowerCase();
 
-        if (ex.getMessage().toLowerCase().contains("no encontrado")) {
+        if (lowerMsg.contains("no encontrado") || lowerMsg.contains("no encontrada")) {
             status = HttpStatus.NOT_FOUND;
             errorLabel = "Resource Not Found";
-        } else if (ex.getMessage().toLowerCase().contains("no encontrada")) {
-            status = HttpStatus.NOT_FOUND;
-            errorLabel = "Resource Not Found";
+        } else if (lowerMsg.contains("ya existe") || lowerMsg.contains("ya está") || lowerMsg.contains("no está abierta")) {
+            status = HttpStatus.BAD_REQUEST;
+            errorLabel = "Bad Request";
         }
 
         ErrorResponse error = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(status.value())
                 .error(errorLabel)
-                .message(ex.getMessage())
+                .message(message)
                 .path(request.getRequestURI())
                 .build();
         return new ResponseEntity<>(error, status);

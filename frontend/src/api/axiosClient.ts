@@ -29,7 +29,11 @@ axiosClient.interceptors.response.use(
     (error) => {
         if (error.response) {
             const status = error.response.status;
-            if (status === 400 || status === 500) {
+            if (status === 401 && !window.location.pathname.startsWith('/login')) {
+                sessionStorage.removeItem('pos_user');
+                sessionStorage.removeItem('token');
+                window.location.href = '/login';
+            } else if (status === 400 || status === 500) {
                 console.error(`API Error [${status}]:`, error.response.data || error.message);
             }
         } else {

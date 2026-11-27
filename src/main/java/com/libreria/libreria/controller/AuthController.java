@@ -7,6 +7,8 @@ import com.libreria.libreria.security.JwtService;
 
 import jakarta.validation.Valid;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,8 +17,9 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
 public class AuthController {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
@@ -29,7 +32,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody LoginDTO loginDTO) {
         try {
-            System.out.println("Iniciando login para: " + loginDTO.getUsername());
+            log.info("Iniciando login para usuario: {}", loginDTO.getUsername());
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginDTO.getUsername(),
@@ -48,11 +51,10 @@ public class AuthController {
 
             return ResponseEntity.ok(response);
         } catch (org.springframework.security.core.AuthenticationException e) {
-            System.err.println("Error de autenticación para " + loginDTO.getUsername() + ": " + e.getMessage());
+            log.warn("Error de autenticación para {}: {}", loginDTO.getUsername(), e.getMessage());
             return ResponseEntity.status(401).body("Credenciales inválidas o cuenta desactivada");
         } catch (Exception e) {
-            System.err.println("Error inesperado en login: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error inesperado en login para {}", loginDTO.getUsername(), e);
             return ResponseEntity.status(500).body("Error interno del servidor");
         }
     }

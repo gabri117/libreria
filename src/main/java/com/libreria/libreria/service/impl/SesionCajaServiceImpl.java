@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class SesionCajaServiceImpl implements SesionCajaService {
@@ -95,6 +97,15 @@ public class SesionCajaServiceImpl implements SesionCajaService {
                 sesion.setEstado(EstadoSesion.Cerrada);
 
                 return mapToDTO(sesionCajaRepository.save(sesion));
+        }
+
+        @Override
+        @Transactional(readOnly = true)
+        public List<SesionCajaDTO> listarHistorialSesiones(Integer usuarioId, boolean esAdmin) {
+                List<SesionCaja> sesiones = esAdmin
+                                ? sesionCajaRepository.findAllByOrderByFechaAperturaDesc()
+                                : sesionCajaRepository.findByUsuarioApertura_UsuarioIdOrderByFechaAperturaDesc(usuarioId);
+                return sesiones.stream().map(this::mapToDTO).collect(Collectors.toList());
         }
 
         private SesionCajaDTO mapToDTO(SesionCaja sesion) {
