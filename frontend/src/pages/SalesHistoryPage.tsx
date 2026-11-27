@@ -3,7 +3,7 @@ import {
     Search, Filter, Eye, XCircle, Loader2, ChevronDown,
     Calendar, CreditCard, User, History, RefreshCcw,
     FileText, ShoppingBag, DollarSign, Tag, CheckCircle2,
-    ArrowRight
+    ArrowRight, Download
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { filtrarVentas, obtenerVentas, descargarFactura } from '../services/ventaService';
@@ -11,6 +11,8 @@ import type { VentaDTO, FiltrosVenta, MetodoPago, EstadoVenta } from '../types';
 import { SaleDetailModal } from '../components/Sales/SaleDetailModal';
 import { VoidSaleModal } from '../components/Sales/VoidSaleModal';
 import { useAuth } from '../context/AuthContext';
+import { exportToCsv } from '../utils/csvExport';
+import { toLocalDateKey } from '../utils/dateUtils';
 
 export const SalesHistoryPage = () => {
     const [ventas, setVentas] = useState<VentaDTO[]>([]);
@@ -51,12 +53,8 @@ export const SalesHistoryPage = () => {
             setLoading(true);
             const filtrosLimpios: FiltrosVenta = {};
 
-            if (filtros.fechaInicio) filtrosLimpios.fechaInicio = new Date(filtros.fechaInicio).toISOString();
-            if (filtros.fechaFin) {
-                const fechaFin = new Date(filtros.fechaFin);
-                fechaFin.setHours(23, 59, 59, 999);
-                filtrosLimpios.fechaFin = fechaFin.toISOString();
-            }
+            if (filtros.fechaInicio) filtrosLimpios.fechaInicio = `${filtros.fechaInicio}T00:00:00`;
+            if (filtros.fechaFin) filtrosLimpios.fechaFin = `${filtros.fechaFin}T23:59:59`;
             if (filtros.clienteId) filtrosLimpios.clienteId = filtros.clienteId;
             if (filtros.metodoPago) filtrosLimpios.metodoPago = filtros.metodoPago;
             if (filtros.estado) filtrosLimpios.estado = filtros.estado;
@@ -95,6 +93,24 @@ export const SalesHistoryPage = () => {
     const handleVoidSuccess = () => {
         cargarVentas();
         setSaleToVoid(null);
+    };
+
+    const handleExportarCsv = () => {
+        if (ventasFiltradas.length === 0) {
+            toast.error('No hay ventas para exportar');
+            return;
+        }
+        exportToCsv(`reporte_ventas_${toLocalDateKey(new Date())}.csv`, ventasFiltradas, [
+            { header: 'No. Factura', accessor: v => v.ventaId },
+            { header: 'Fecha', accessor: v => v.fechaVenta ? new Date(v.fechaVenta).toLocaleString('es-GT') : '' },
+            { header: 'Cliente', accessor: v => v.clienteNombre || 'Consumidor Final' },
+            { header: 'Vendedor', accessor: v => v.usuarioNombre || '' },
+            { header: 'Método de Pago', accessor: v => v.metodoPago },
+            { header: 'Estado', accessor: v => v.estado || 'Completada' },
+            { header: 'Total (Q)', accessor: v => Number(v.montoTotal || 0).toFixed(2) },
+            { header: 'Motivo Anulación', accessor: v => v.motivoAnulacion || '' },
+        ]);
+        toast.success('Reporte de ventas exportado a CSV');
     };
 
     const isAdmin = user?.rol === 'Administrador';
@@ -139,6 +155,15 @@ export const SalesHistoryPage = () => {
                             <Filter size={18} />
                             <span>Filtros</span>
                             <ChevronDown size={14} className={`transition-transform duration-300 ${showFilters ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        <button
+                            onClick={handleExportarCsv}
+                            className="flex items-center gap-2 px-5 py-3 bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/30 rounded-2xl font-bold text-sm transition-all active:scale-95"
+                            title="Exportar ventas filtradas a Excel/CSV"
+                        >
+                            <Download size={18} />
+                            <span>Exportar CSV</span>
                         </button>
 
                         <button

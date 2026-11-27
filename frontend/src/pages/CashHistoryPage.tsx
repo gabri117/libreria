@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Wallet, RefreshCw, Loader2, CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
+import { Wallet, RefreshCw, Loader2, CheckCircle2, AlertTriangle, Clock, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { obtenerHistorialSesiones } from '../services/sesionService';
 import type { SesionCaja, EstadoSesion } from '../types';
+import { exportToCsv } from '../utils/csvExport';
+import { toLocalDateKey } from '../utils/dateUtils';
 
 type FiltroEstado = 'Todas' | EstadoSesion;
 
@@ -61,6 +63,26 @@ export const CashHistoryPage = () => {
         };
     }, [sesiones]);
 
+    const handleExportarCsv = () => {
+        if (sesionesFiltradas.length === 0) {
+            toast.error('No hay sesiones de caja para exportar');
+            return;
+        }
+        exportToCsv(`cierres_caja_${toLocalDateKey(new Date())}.csv`, sesionesFiltradas, [
+            { header: 'Sesión #', accessor: s => s.sesionId },
+            { header: 'Estado', accessor: s => s.estado },
+            { header: 'Usuario Apertura', accessor: s => s.usuarioAperturaNombre || s.usuarioAperturaId },
+            { header: 'Fecha Apertura', accessor: s => formatDateTime(s.fechaApertura) },
+            { header: 'Usuario Cierre', accessor: s => s.usuarioCierreNombre || '' },
+            { header: 'Fecha Cierre', accessor: s => formatDateTime(s.fechaCierre) },
+            { header: 'Monto Inicial (Q)', accessor: s => Number(s.montoInicial || 0).toFixed(2) },
+            { header: 'Monto Esperado (Q)', accessor: s => s.montoFinalEsperado != null ? Number(s.montoFinalEsperado).toFixed(2) : '' },
+            { header: 'Monto Contado (Q)', accessor: s => s.montoFinalContado != null ? Number(s.montoFinalContado).toFixed(2) : '' },
+            { header: 'Diferencia (Q)', accessor: s => s.diferencia != null ? Number(s.diferencia).toFixed(2) : '' },
+        ]);
+        toast.success('Historial de cierres exportado a CSV');
+    };
+
     return (
         <div className="animate-fade-in">
             <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
@@ -77,13 +99,22 @@ export const CashHistoryPage = () => {
                     </p>
                 </div>
 
-                <button
-                    onClick={cargarHistorial}
-                    className="px-5 py-3 glass-card border-white/10 text-xs font-black uppercase tracking-widest text-brand-primary-400 hover:bg-brand-primary-500 hover:text-white rounded-2xl flex items-center gap-2 transition-all"
-                >
-                    <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
-                    Actualizar
-                </button>
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={handleExportarCsv}
+                        className="px-5 py-3 bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/30 text-xs font-black uppercase tracking-widest rounded-2xl flex items-center gap-2 transition-all"
+                    >
+                        <Download size={15} />
+                        Exportar CSV
+                    </button>
+                    <button
+                        onClick={cargarHistorial}
+                        className="px-5 py-3 glass-card border-white/10 text-xs font-black uppercase tracking-widest text-brand-primary-400 hover:bg-brand-primary-500 hover:text-white rounded-2xl flex items-center gap-2 transition-all"
+                    >
+                        <RefreshCw size={15} className={isLoading ? 'animate-spin' : ''} />
+                        Actualizar
+                    </button>
+                </div>
             </header>
 
             {/* KPIs */}
