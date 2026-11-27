@@ -1,6 +1,6 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef, type KeyboardEvent } from 'react';
 import { Search, Loader2, ShoppingBag } from 'lucide-react';
-import { toast, Toaster } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 
 import type { Producto } from '../types';
 import { obtenerProductos } from '../services/productoService';
@@ -15,6 +15,7 @@ export const POSPage = () => {
     const [productos, setProductos] = useState<Producto[]>([]);
     const [loading, setLoading] = useState(true);
     const [busqueda, setBusqueda] = useState('');
+    const searchInputRef = useRef<HTMLInputElement>(null);
 
     const { agregarProducto } = useCart();
     const { sesionActiva, isLoading: sessionLoading, abrirSesion } = useSession();
@@ -41,12 +42,16 @@ export const POSPage = () => {
         const lower = busqueda.toLowerCase();
         return productos.filter(p =>
             p.nombre.toLowerCase().includes(lower) ||
-            p.sku.toLowerCase().includes(lower)
+            (p.sku || '').toLowerCase().includes(lower)
         );
     }, [productos, busqueda]);
 
     const handleAgregar = (producto: Producto) => {
-        agregarProducto(producto);
+        const agregado = agregarProducto(producto);
+        if (!agregado) {
+            toast.error(`Sin stock suficiente para ${producto.nombre}`);
+            return;
+        }
         toast.success(`${producto.nombre} agregado`, {
             position: 'bottom-center',
             duration: 1500,
@@ -59,9 +64,25 @@ export const POSPage = () => {
         });
     };
 
+    // Soporte para lector de código de barras (Enter agrega coincidencia exacta de SKU o único resultado)
+    const handleSearchKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+        if (e.key !== 'Enter') return;
+        const term = busqueda.trim().toLowerCase();
+        if (!term) return;
+
+        const exactSkuMatch = productos.find(p => (p.sku || '').toLowerCase() === term);
+        const targetProduct = exactSkuMatch || (productosFiltrados.length === 1 ? productosFiltrados[0] : null);
+
+        if (targetProduct) {
+            e.preventDefault();
+            handleAgregar(targetProduct);
+            setBusqueda('');
+            searchInputRef.current?.focus();
+        }
+    };
+
     return (
         <div className="flex h-screen overflow-hidden font-sans">
-            <Toaster />
 
             {/* --- Main Content Area (Products) --- */}
             <div className="flex-1 flex flex-col h-full overflow-hidden relative">
@@ -77,8 +98,9 @@ export const POSPage = () => {
                                 <Search className="text-gray-500 group-focus-within:text-brand-primary-400 transition-colors" size={20} />
                             </div>
                             <input
+                                ref={searchInputRef}
                                 type="text"
-                                placeholder="Buscar productos por nombre o SKU..."
+                                placeholder="Buscar por nombre o escanear SKU y presionar Enter..."
                                 className="
                                     w-full pl-12 pr-4 py-4
                                     bg-white/5 border border-white/5
@@ -89,6 +111,7 @@ export const POSPage = () => {
                                 "
                                 value={busqueda}
                                 onChange={(e) => setBusqueda(e.target.value)}
+                                onKeyDown={handleSearchKeyDown}
                                 autoFocus
                             />
                         </div>
@@ -133,7 +156,7 @@ export const POSPage = () => {
 
             {/* --- Sidebar (Cart) --- */}
             <div className="w-[420px] h-full flex-shrink-0 z-30 m-4 ml-0">
-                <CartSidebar />
+                <CartSidebar onSaleCompleted={cargarProductos} />
             </div>
 
             {/* Session Guard */}

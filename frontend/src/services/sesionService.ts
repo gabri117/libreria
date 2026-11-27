@@ -24,3 +24,8 @@ export const cerrarCaja = async (sesionId: number, data: CierreCajaDTO): Promise
     const response = await axiosClient.post<SesionCaja>(`/sesiones/${sesionId}/cerrar`, data);
     return response.data;
 };
+
+export const obtenerHistorialSesiones = async (): Promise<SesionCaja[]> => {
+    const response = await axiosClient.get<SesionCaja[]>('/sesiones/historial');
+    return response.data;
+};

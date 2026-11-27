@@ -3,28 +3,43 @@ import type { Producto, Cliente } from '../types';
 
 export interface CartItem extends Producto {
     cantidad: number;
-    precioAplicado: number; // El precio que se está cobrando (Venta o Mayorista)
+    precioAplicado: number; // El precio que se está cobrando (Venta, Mayorista o Costo)
+    descuento: number;
     subtotal: number;
 }
 
 interface CartContextType {
     items: CartItem[];
     clienteSeleccionado: Cliente | null;
+    subtotalBruto: number;
+    totalDescuento: number;
     totalVenta: number;
-    agregarProducto: (producto: Producto) => void;
+    agregarProducto: (producto: Producto) => boolean;
     eliminarProducto: (id: number) => void;
     actualizarCantidad: (id: number, cantidad: number) => void;
+    actualizarDescuento: (id: number, descuento: number) => void;
     seleccionarCliente: (cliente: Cliente | null) => void;
     limpiarCarrito: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const calcularDescuentoValido = (precio: number, cantidad: number, descuento: number): number => {
+    const bruto = precio * cantidad;
+    if (!Number.isFinite(descuento) || descuento < 0) return 0;
+    return Math.min(descuento, bruto);
+};
+
+const calcularSubtotal = (precio: number, cantidad: number, descuento: number): number => {
+    const bruto = precio * cantidad;
+    const desc = calcularDescuentoValido(precio, cantidad, descuento);
+    return Number((bruto - desc).toFixed(2));
+};
+
 export const CartProvider = ({ children }: { children: ReactNode }) => {
     const [items, setItems] = useState<CartItem[]>([]);
     const [clienteSeleccionado, setCliente] = useState<Cliente | null>(null);
 
-    // Calcular el precio correcto según el cliente actual
     const getPrecioCorrecto = (producto: Producto, cliente: Cliente | null): number => {
         if (cliente?.nivelPrecioAsignado === 'Mayorista') {
             return producto.precioMayorista;
@@ -35,34 +50,48 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         return producto.precioVenta;
     };
 
-    const agregarProducto = (producto: Producto) => {
+    const agregarProducto = (producto: Producto): boolean => {
+        if (producto.cantidadStock <= 0) {
+            return false;
+        }
+        const existingItem = items.find((item) => item.productoId === producto.productoId);
+        if (existingItem && existingItem.cantidad >= producto.cantidadStock) {
+            return false;
+        }
+
         setItems((prevItems) => {
-            const existingItem = prevItems.find((item) => item.productoId === producto.productoId);
+            const existing = prevItems.find((item) => item.productoId === producto.productoId);
             const precio = getPrecioCorrecto(producto, clienteSeleccionado);
 
-            if (existingItem) {
+            if (existing) {
+                const nuevaCantidad = Math.min(existing.cantidad + 1, producto.cantidadStock);
+                const descuentoValido = calcularDescuentoValido(precio, nuevaCantidad, existing.descuento);
                 return prevItems.map((item) =>
                     item.productoId === producto.productoId
                         ? {
                             ...item,
-                            cantidad: item.cantidad + 1,
-                            precioAplicado: precio, // Se reafirma el precio por si acaso
-                            subtotal: (item.cantidad + 1) * precio,
+                            cantidadStock: producto.cantidadStock,
+                            cantidad: nuevaCantidad,
+                            precioAplicado: precio,
+                            descuento: descuentoValido,
+                            subtotal: calcularSubtotal(precio, nuevaCantidad, descuentoValido),
                         }
                         : item
                 );
-            } else {
-                return [
-                    ...prevItems,
-                    {
-                        ...producto,
-                        cantidad: 1,
-                        precioAplicado: precio,
-                        subtotal: precio,
-                    },
-                ];
             }
+
+            return [
+                ...prevItems,
+                {
+                    ...producto,
+                    cantidad: 1,
+                    precioAplicado: precio,
+                    descuento: 0,
+                    subtotal: precio,
+                },
+            ];
         });
+        return true;
     };
 
     const eliminarProducto = (id: number) => {
@@ -75,24 +104,45 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
             return;
         }
         setItems((prev) =>
-            prev.map((item) =>
-                item.productoId === id
-                    ? { ...item, cantidad, subtotal: item.precioAplicado * cantidad }
-                    : item
-            )
+            prev.map((item) => {
+                if (item.productoId !== id) return item;
+                const cantidadValida = Math.min(cantidad, item.cantidadStock);
+                const descuentoValido = calcularDescuentoValido(item.precioAplicado, cantidadValida, item.descuento);
+                return {
+                    ...item,
+                    cantidad: cantidadValida,
+                    descuento: descuentoValido,
+                    subtotal: calcularSubtotal(item.precioAplicado, cantidadValida, descuentoValido),
+                };
+            })
+        );
+    };
+
+    const actualizarDescuento = (id: number, descuento: number) => {
+        setItems((prev) =>
+            prev.map((item) => {
+                if (item.productoId !== id) return item;
+                const descuentoValido = calcularDescuentoValido(item.precioAplicado, item.cantidad, descuento);
+                return {
+                    ...item,
+                    descuento: descuentoValido,
+                    subtotal: calcularSubtotal(item.precioAplicado, item.cantidad, descuentoValido),
+                };
+            })
         );
     };
 
     const seleccionarCliente = (cliente: Cliente | null) => {
         setCliente(cliente);
-        // Recalcular precios de todos los items en el carrito
         setItems((prevItems) =>
             prevItems.map((item) => {
                 const nuevoPrecio = getPrecioCorrecto(item, cliente);
+                const descuentoValido = calcularDescuentoValido(nuevoPrecio, item.cantidad, item.descuento);
                 return {
                     ...item,
                     precioAplicado: nuevoPrecio,
-                    subtotal: item.cantidad * nuevoPrecio,
+                    descuento: descuentoValido,
+                    subtotal: calcularSubtotal(nuevoPrecio, item.cantidad, descuentoValido),
                 };
             })
         );
@@ -103,19 +153,33 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         setCliente(null);
     };
 
-    const totalVenta = useMemo(() => {
-        return items.reduce((acc, item) => acc + item.subtotal, 0);
-    }, [items]);
+    const subtotalBruto = useMemo(
+        () => items.reduce((acc, item) => acc + item.precioAplicado * item.cantidad, 0),
+        [items]
+    );
+
+    const totalDescuento = useMemo(
+        () => items.reduce((acc, item) => acc + item.descuento, 0),
+        [items]
+    );
+
+    const totalVenta = useMemo(
+        () => items.reduce((acc, item) => acc + item.subtotal, 0),
+        [items]
+    );
 
     return (
         <CartContext.Provider
             value={{
                 items,
                 clienteSeleccionado,
+                subtotalBruto,
+                totalDescuento,
                 totalVenta,
                 agregarProducto,
                 eliminarProducto,
                 actualizarCantidad,
+                actualizarDescuento,
                 seleccionarCliente,
                 limpiarCarrito,
             }}

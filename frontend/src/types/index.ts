@@ -106,14 +106,29 @@ export type EstadoSesion = 'Abierta' | 'Cerrada';
 export interface SesionCaja {
     sesionId: number;
     usuarioAperturaId: number;
+    usuarioAperturaNombre?: string;
     fechaApertura: string;
     montoInicial: number;
     usuarioCierreId?: number;
+    usuarioCierreNombre?: string;
     fechaCierre?: string;
     montoFinalEsperado?: number;
     montoFinalContado?: number;
     diferencia?: number;
     estado: EstadoSesion;
+}
+
+export interface ProductoMasVendidoDTO {
+    productoId: number;
+    nombreProducto: string;
+    cantidadVendida: number;
+    montoTotal: number;
+}
+
+export interface VentasPorMetodoDTO {
+    metodoPago: MetodoPago;
+    numeroVentas: number;
+    montoTotal: number;
 }
 
 export interface AperturaCajaDTO {

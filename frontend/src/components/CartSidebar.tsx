@@ -1,17 +1,44 @@
 import { useState } from 'react';
-import { Trash2, ShoppingBag, Minus, Plus, CreditCard, Loader2 } from 'lucide-react';
+import { Trash2, ShoppingBag, Minus, Plus, CreditCard, Loader2, Banknote, Layers, FileText, Tag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { ClientSelector } from './ClientSelector';
 import { crearVenta, descargarFactura } from '../services/ventaService';
 import { toast } from 'react-hot-toast';
 import { useSession } from '../context/SessionContext';
-import type { VentaDTO, DetalleVentaDTO } from '../types';
-import { FileText } from 'lucide-react';
+import type { VentaDTO, DetalleVentaDTO, MetodoPago } from '../types';
 
-export const CartSidebar = () => {
-    const { items, totalVenta, eliminarProducto, actualizarCantidad, limpiarCarrito, clienteSeleccionado } = useCart();
+interface CartSidebarProps {
+    onSaleCompleted?: () => void;
+}
+
+const METODOS_PAGO: { value: MetodoPago; label: string; icon: typeof Banknote }[] = [
+    { value: 'Efectivo', label: 'Efectivo', icon: Banknote },
+    { value: 'Tarjeta', label: 'Tarjeta', icon: CreditCard },
+    { value: 'Mixto', label: 'Mixto', icon: Layers },
+];
+
+export const CartSidebar = ({ onSaleCompleted }: CartSidebarProps) => {
+    const {
+        items,
+        subtotalBruto,
+        totalDescuento,
+        totalVenta,
+        eliminarProducto,
+        actualizarCantidad,
+        actualizarDescuento,
+        limpiarCarrito,
+        clienteSeleccionado
+    } = useCart();
     const { sesionActiva } = useSession();
     const [loading, setLoading] = useState(false);
+    const [metodoPago, setMetodoPago] = useState<MetodoPago>('Efectivo');
+    const [efectivoRecibido, setEfectivoRecibido] = useState<string>('');
+
+    const montoRecibidoNum = efectivoRecibido.trim() === '' ? null : Number(efectivoRecibido);
+    const cambio = montoRecibidoNum !== null && Number.isFinite(montoRecibidoNum)
+        ? montoRecibidoNum - totalVenta
+        : null;
+    const efectivoInsuficiente = metodoPago === 'Efectivo' && montoRecibidoNum !== null && montoRecibidoNum < totalVenta;
 
     const handleProcesarVenta = async () => {
         if (!clienteSeleccionado) {
@@ -24,25 +51,33 @@ export const CartSidebar = () => {
             return;
         }
 
+        if (efectivoInsuficiente) {
+            toast.error('El monto recibido en efectivo es menor al total');
+            return;
+        }
+
         setLoading(true);
         try {
             const detalles: DetalleVentaDTO[] = items.map(item => ({
                 productoId: item.productoId,
                 cantidad: item.cantidad,
-                descuento: 0,
+                descuento: item.descuento,
                 precioUnitario: item.precioAplicado
             }));
 
             const ventaPayload: VentaDTO = {
                 clienteId: clienteSeleccionado.clienteId,
-                usuarioId: sesionActiva.usuarioAperturaId, // Use the user who opened the session
+                usuarioId: sesionActiva.usuarioAperturaId,
                 sesionId: sesionActiva.sesionId,
-                metodoPago: 'Efectivo',
+                metodoPago,
                 detalles
             };
 
             const nuevaVenta = await crearVenta(ventaPayload);
             limpiarCarrito();
+            setEfectivoRecibido('');
+            setMetodoPago('Efectivo');
+            onSaleCompleted?.();
 
             toast.custom((t) => (
                 <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full glass-panel border border-brand-primary-500/30 shadow-2xl rounded-2xl pointer-events-auto flex overflow-hidden`}>
@@ -217,6 +252,24 @@ export const CartSidebar = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Descuento por ítem */}
+                        <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between gap-2 relative z-10">
+                            <span className="flex items-center gap-1.5 text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+                                <Tag size={12} />
+                                Descuento (Q)
+                            </span>
+                            <input
+                                type="number"
+                                min={0}
+                                max={Number((item.precioAplicado * item.cantidad).toFixed(2))}
+                                step="0.50"
+                                value={item.descuento === 0 ? '' : item.descuento}
+                                placeholder="0.00"
+                                onChange={(e) => actualizarDescuento(item.productoId, Number(e.target.value || 0))}
+                                className="w-24 px-2.5 py-1 text-right text-xs font-bold bg-white/5 border border-white/10 rounded-lg text-emerald-400 placeholder-gray-600 focus:outline-none focus:border-brand-primary-500/50"
+                            />
+                        </div>
                         {/* Background subtle glow */}
                         <div className="absolute top-0 right-0 w-24 h-24 bg-brand-primary-500/5 blur-2xl rounded-full z-0 pointer-events-none"></div>
                     </div>
@@ -224,17 +277,71 @@ export const CartSidebar = () => {
             </div>
 
             {/* Footer / Totals */}
-            <div className="p-8 glass-panel border-t border-white/10 mt-auto bg-slate-900/40 relative">
-                <div className="space-y-3 mb-8 text-xs font-bold uppercase tracking-widest text-gray-400">
+            <div className="p-6 glass-panel border-t border-white/10 mt-auto bg-slate-900/40 relative space-y-5">
+                {/* Selector de Método de Pago */}
+                <div>
+                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Método de Pago</p>
+                    <div className="grid grid-cols-3 gap-2">
+                        {METODOS_PAGO.map(({ value, label, icon: Icon }) => {
+                            const active = metodoPago === value;
+                            return (
+                                <button
+                                    key={value}
+                                    type="button"
+                                    onClick={() => setMetodoPago(value)}
+                                    className={`py-2.5 px-2 rounded-xl text-[11px] font-black uppercase tracking-wider flex items-center justify-center gap-1.5 border transition-all ${active
+                                        ? 'bg-brand-primary-500/20 text-brand-primary-300 border-brand-primary-500/50 shadow-lg shadow-brand-primary-500/10'
+                                        : 'bg-white/5 text-gray-400 border-white/5 hover:bg-white/10 hover:text-white'
+                                        }`}
+                                >
+                                    <Icon size={14} />
+                                    {label}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Cálculo de Vuelto (solo Efectivo) */}
+                {metodoPago === 'Efectivo' && (
+                    <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 space-y-2">
+                        <div className="flex items-center justify-between gap-3">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-wider">
+                                Efectivo recibido (Q)
+                            </label>
+                            <input
+                                type="number"
+                                min={0}
+                                step="0.50"
+                                placeholder={totalVenta.toFixed(2)}
+                                value={efectivoRecibido}
+                                onChange={(e) => setEfectivoRecibido(e.target.value)}
+                                className="w-32 px-3 py-1.5 text-right text-sm font-black bg-slate-900/70 border border-white/10 rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-brand-primary-500/50"
+                            />
+                        </div>
+                        {cambio !== null && (
+                            <div className="flex justify-between items-center text-xs font-black pt-1 border-t border-white/5">
+                                <span className="uppercase tracking-wider text-gray-400">
+                                    {cambio >= 0 ? 'Vuelto / Cambio' : 'Faltante'}
+                                </span>
+                                <span className={cambio >= 0 ? 'text-emerald-400 text-base' : 'text-red-400 text-base'}>
+                                    Q{Math.abs(cambio).toFixed(2)}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                <div className="space-y-2 text-xs font-bold uppercase tracking-widest text-gray-400">
                     <div className="flex justify-between">
                         <span>Subtotal</span>
-                        <span className="text-white">Q{totalVenta.toFixed(2)}</span>
+                        <span className="text-white">Q{subtotalBruto.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
-                        <span>Promoción</span>
-                        <span className="text-emerald-400">- Q0.00</span>
+                        <span>Descuentos</span>
+                        <span className="text-emerald-400">- Q{totalDescuento.toFixed(2)}</span>
                     </div>
-                    <div className="flex justify-between text-2xl font-black text-white pt-6 border-t border-white/5 mt-4 tracking-tighter normal-case">
+                    <div className="flex justify-between text-2xl font-black text-white pt-4 border-t border-white/5 tracking-tighter normal-case">
                         <span>Total</span>
                         <span className="text-brand-primary-400">Q{totalVenta.toFixed(2)}</span>
                     </div>
@@ -242,9 +349,9 @@ export const CartSidebar = () => {
 
                 <button
                     onClick={handleProcesarVenta}
-                    disabled={loading || items.length === 0}
+                    disabled={loading || items.length === 0 || efectivoInsuficiente}
                     className="
-                        w-full py-5 bg-gradient-to-r from-brand-primary-600 to-brand-primary-500 text-white rounded-2xl font-black 
+                        w-full py-4 bg-gradient-to-r from-brand-primary-600 to-brand-primary-500 text-white rounded-2xl font-black 
                         shadow-2xl shadow-brand-primary-600/20 uppercase tracking-[0.15em] text-xs
                         hover:from-brand-primary-500 hover:to-brand-primary-400
                         active:scale-[0.98] transition-all duration-500 flex items-center justify-center gap-3

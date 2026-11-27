@@ -6,6 +6,7 @@ import { CartProvider } from './context/CartContext';
 import { POSPage } from './pages/POSPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { SalesHistoryPage } from './pages/SalesHistoryPage';
+import { CashHistoryPage } from './pages/CashHistoryPage';
 import InventoryPage from './pages/InventoryPage';
 import ClientsPage from './pages/ClientsPage';
 import CatalogsPage from './pages/CatalogsPage';
@@ -53,6 +54,7 @@ function App() {
               <Route element={<ProtectedRoute children={<Layout />} />} >
                 <Route path="/" element={<DashboardPage />} />
                 <Route path="/ventas" element={<SalesHistoryPage />} />
+                <Route path="/caja" element={<CashHistoryPage />} />
                 <Route path="/pos" element={<POSPage />} />
                 <Route path="/inventario" element={<InventoryPage />} />
                 <Route path="/clientes" element={<ClientsPage />} />
