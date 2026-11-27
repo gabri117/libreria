@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Plus, Package, RefreshCw, Search, AlertTriangle, DollarSign } from 'lucide-react';
+import { Plus, Package, RefreshCw, Search, AlertTriangle, DollarSign, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ProductTable from '../components/ProductTable';
 import ProductModal from '../components/ProductModal';
+import { exportToCsv } from '../utils/csvExport';
+import { toLocalDateKey } from '../utils/dateUtils';
 import {
     obtenerProductos,
     crearProducto,
@@ -117,6 +119,27 @@ export default function InventoryPage() {
         setSelectedProducto(null);
     };
 
+    const handleExportarCsv = () => {
+        if (filteredProductos.length === 0) {
+            toast.error('No hay productos para exportar');
+            return;
+        }
+        exportToCsv(`inventario_valorizado_${toLocalDateKey(new Date())}.csv`, filteredProductos, [
+            { header: 'SKU', accessor: p => p.sku },
+            { header: 'Producto', accessor: p => p.nombre },
+            { header: 'Categoría', accessor: p => p.categoria?.nombre || '' },
+            { header: 'Ubicación', accessor: p => p.ubicacion?.nombreCorto || '' },
+            { header: 'Stock', accessor: p => p.cantidadStock },
+            { header: 'Precio Costo (Q)', accessor: p => Number(p.precioCosto || 0).toFixed(2) },
+            { header: 'Precio Mayorista (Q)', accessor: p => Number(p.precioMayorista || 0).toFixed(2) },
+            { header: 'Precio Venta (Q)', accessor: p => Number(p.precioVenta || 0).toFixed(2) },
+            { header: 'Valor Costo Total (Q)', accessor: p => (Number(p.precioCosto || 0) * p.cantidadStock).toFixed(2) },
+            { header: 'Valor Venta Total (Q)', accessor: p => (Number(p.precioVenta || 0) * p.cantidadStock).toFixed(2) },
+            { header: 'Ganancia Potencial (Q)', accessor: p => ((Number(p.precioVenta || 0) - Number(p.precioCosto || 0)) * p.cantidadStock).toFixed(2) },
+        ]);
+        toast.success('Inventario exportado a CSV');
+    };
+
     const productosConStockBajo = productos.filter((p) => p.cantidadStock < 5).length;
     const valorTotalInventario = productos.reduce(
         (sum, p) => sum + p.precioVenta * p.cantidadStock,
@@ -136,11 +159,13 @@ export default function InventoryPage() {
                         <p className="text-gray-500 font-bold uppercase tracking-[0.2em] text-[10px] ml-11">Control de Existencias y Almacén</p>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <div className="flex flex-col items-end mr-4 hidden lg:block">
-                            <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest leading-none">Última Sincronización</span>
-                            <span className="text-xs font-bold text-brand-primary-400">Hace unos momentos</span>
-                        </div>
+                    <div className="flex items-center gap-3 flex-wrap">
+                        <button
+                            onClick={handleExportarCsv}
+                            className="bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-white px-6 py-4 rounded-2xl font-black flex items-center gap-2 transition-all active:scale-95 uppercase tracking-widest text-xs border border-emerald-500/30"
+                        >
+                            <Download size={18} strokeWidth={2.5} /> Exportar CSV
+                        </button>
                         <button
                             onClick={handleNuevoProducto}
                             className="bg-brand-primary-500 hover:bg-brand-primary-400 text-white px-8 py-4 rounded-2xl font-black shadow-2xl shadow-brand-primary-600/20 flex items-center gap-3 transition-all active:scale-95 uppercase tracking-widest text-xs border border-brand-primary-400/20"
