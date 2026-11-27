@@ -158,4 +158,39 @@ export interface ProveedorFormData {
     nitProveedor?: string;
 }
 
+export interface DetalleCompraDTO {
+    detalleCompraId?: number;
+    productoId: number;
+    productoNombre?: string;
+    productoSku?: string;
+    cantidad: number;
+    precioCostoCompra: number;
+    subtotal?: number;
+}
+
+export interface CompraDTO {
+    compraId?: number;
+    proveedorId: number;
+    proveedorNombre?: string;
+    usuarioId?: number;
+    usuarioNombre?: string;
+    fechaCompra?: string;
+    numeroFacturaProveedor?: string;
+    totalCompra?: number;
+    detalles: DetalleCompraDTO[];
+}
+
+export interface AjusteInventarioDTO {
+    ajusteId?: number;
+    usuarioId?: number;
+    usuarioNombre?: string;
+    productoId: number;
+    productoNombre?: string;
+    productoSku?: string;
+    fechaAjuste?: string;
+    cantidad: number;
+    motivo: string;
+    stockResultante?: number;
+}
+
 

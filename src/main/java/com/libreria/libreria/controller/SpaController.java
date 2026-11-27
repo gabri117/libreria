@@ -12,6 +12,8 @@ public class SpaController {
             "/caja",
             "/pos",
             "/inventario",
+            "/compras",
+            "/ajustes",
             "/clientes",
             "/catalogos",
             "/usuarios"
