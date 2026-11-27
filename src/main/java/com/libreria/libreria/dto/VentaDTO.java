@@ -21,7 +21,6 @@ public class VentaDTO {
     @NotNull
     private Integer sesionId;
 
-    @NotNull
     private Integer usuarioId;
     private String usuarioNombre;
 

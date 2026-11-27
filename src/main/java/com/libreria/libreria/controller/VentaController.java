@@ -4,6 +4,7 @@ import com.libreria.libreria.dto.EstadisticasVentasDTO;
 import com.libreria.libreria.dto.ProductoMasVendidoDTO;
 import com.libreria.libreria.dto.VentaDTO;
 import com.libreria.libreria.dto.VentasPorMetodoDTO;
+import com.libreria.libreria.model.Usuario;
 import com.libreria.libreria.model.enums.EstadoVenta;
 import com.libreria.libreria.model.enums.MetodoPago;
 import com.libreria.libreria.service.VentaService;
@@ -15,11 +16,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/ventas")
-@CrossOrigin(origins = "*")
 public class VentaController {
 
     private final VentaService ventaService;
@@ -30,7 +32,10 @@ public class VentaController {
     }
 
     @PostMapping
-    public ResponseEntity<VentaDTO> registrarVenta(@Valid @RequestBody VentaDTO ventaDTO) {
+    public ResponseEntity<VentaDTO> registrarVenta(
+            @Valid @RequestBody VentaDTO ventaDTO,
+            @AuthenticationPrincipal Usuario usuarioAutenticado) {
+        ventaDTO.setUsuarioId(usuarioAutenticado.getUsuarioId());
         VentaDTO nuevaVenta = ventaService.crearVenta(ventaDTO);
         return new ResponseEntity<>(nuevaVenta, HttpStatus.CREATED);
     }
@@ -58,13 +63,14 @@ public class VentaController {
     }
 
     @PutMapping("/{id}/anular")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
     public ResponseEntity<VentaDTO> anularVenta(
             @PathVariable Integer id,
-            @RequestBody Map<String, Object> payload) {
-        Integer usuarioId = (Integer) payload.get("usuarioId");
+            @RequestBody Map<String, Object> payload,
+            @AuthenticationPrincipal Usuario usuarioAutenticado) {
         String motivo = (String) payload.get("motivo");
 
-        VentaDTO ventaAnulada = ventaService.anularVenta(id, usuarioId, motivo);
+        VentaDTO ventaAnulada = ventaService.anularVenta(id, usuarioAutenticado.getUsuarioId(), motivo);
         return new ResponseEntity<>(ventaAnulada, HttpStatus.OK);
     }
 

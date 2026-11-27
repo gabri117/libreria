@@ -13,7 +13,6 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 public class CierreCajaDTO {
-    @NotNull
     private Integer usuarioId;
 
     @NotNull
