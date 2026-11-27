@@ -2,6 +2,7 @@ package com.libreria.libreria.service.impl;
 
 import com.libreria.libreria.dto.CreateUsuarioDTO;
 import com.libreria.libreria.dto.LoginDTO;
+import com.libreria.libreria.dto.UpdateUsuarioDTO;
 import com.libreria.libreria.dto.UsuarioDTO;
 import com.libreria.libreria.model.Rol;
 import com.libreria.libreria.model.Usuario;
@@ -10,6 +11,8 @@ import com.libreria.libreria.repository.RolRepository;
 import com.libreria.libreria.repository.UsuarioRepository;
 import com.libreria.libreria.service.AuditLogService;
 import com.libreria.libreria.service.UsuarioService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class UsuarioServiceImpl implements UsuarioService {
+
+    private static final Logger log = LoggerFactory.getLogger(UsuarioServiceImpl.class);
 
     private final UsuarioRepository usuarioRepository;
     private final RolRepository rolRepository;
@@ -83,35 +88,84 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
+    @Transactional
+    public UsuarioDTO actualizarUsuario(Integer id, UpdateUsuarioDTO dto, Integer adminId) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado ID: " + id));
+
+        Rol rol = rolRepository.findById(dto.getRolId())
+                .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
+
+        usuario.setNombreCompleto(dto.getNombreCompleto());
+        usuario.setRol(rol);
+
+        if (dto.getPassword() != null && !dto.getPassword().isBlank()) {
+            usuario.setPasswordHash(passwordEncoder.encode(dto.getPassword()));
+        }
+
+        if (dto.getActivo() != null) {
+            if (!dto.getActivo() && usuario.getUsuarioId().equals(adminId)) {
+                throw new IllegalArgumentException("No puedes desactivar tu propia cuenta.");
+            }
+            usuario.setActivo(dto.getActivo());
+        }
+
+        Usuario saved = usuarioRepository.save(usuario);
+        try {
+            auditLogService.logAccion(adminId, TipoAccion.UPDATE, "Usuario", saved.getUsuarioId(),
+                    "Usuario actualizado: " + saved.getUsername());
+        } catch (Exception e) {
+            log.warn("Error registrando auditoría de actualización de usuario {}", saved.getUsuarioId(), e);
+        }
+        return mapToDTO(saved);
+    }
+
+    @Override
+    @Transactional
+    public UsuarioDTO cambiarEstado(Integer id, boolean activo, Integer adminId) {
+        Usuario usuario = usuarioRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado ID: " + id));
+
+        if (!activo && usuario.getUsuarioId().equals(adminId)) {
+            throw new IllegalArgumentException("No puedes desactivar tu propia cuenta.");
+        }
+
+        usuario.setActivo(activo);
+        Usuario saved = usuarioRepository.save(usuario);
+        try {
+            auditLogService.logAccion(adminId, TipoAccion.UPDATE, "Usuario", saved.getUsuarioId(),
+                    "Estado de usuario " + saved.getUsername() + " cambiado a: " + (activo ? "Activo" : "Inactivo"));
+        } catch (Exception e) {
+            log.warn("Error registrando auditoría de estado de usuario {}", saved.getUsuarioId(), e);
+        }
+        return mapToDTO(saved);
+    }
+
+    @Override
     public Optional<Usuario> login(LoginDTO loginDTO) {
-        System.out.println("Intentando login para usuario: " + loginDTO.getUsername());
+        log.info("Intentando login para usuario: {}", loginDTO.getUsername());
         Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(loginDTO.getUsername());
 
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
-            System.out.println("Usuario encontrado en BD. Comparando contraseñas...");
             boolean matches = passwordEncoder.matches(loginDTO.getPassword(), usuario.getPasswordHash());
-            System.out.println("¿Contraseña coincide?: " + matches);
 
             if (matches) {
                 if (!usuario.getActivo()) {
-                    System.out.println("Usuario inactivo");
+                    log.warn("Intento de login con usuario inactivo: {}", loginDTO.getUsername());
                     throw new RuntimeException("Usuario inactivo");
                 }
 
-                // Audit log for successful login
                 try {
                     auditLogService.logAccion(usuario.getUsuarioId(), TipoAccion.LOGIN, "Usuario",
                             usuario.getUsuarioId(),
                             "Login exitoso: " + usuario.getUsername());
                 } catch (Exception e) {
-                    // Continue even if audit fails
+                    log.warn("Error registrando auditoría de login para {}", usuario.getUsername(), e);
                 }
 
                 return Optional.of(usuario);
             }
-        } else {
-            System.out.println("Usuario NO encontrado en BD");
         }
         return Optional.empty();
     }

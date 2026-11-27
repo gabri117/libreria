@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Users, Plus, Shield, UserCircle, Key, UserCheck, ShieldCheck, Mail, Search, Loader2 } from 'lucide-react';
+import { Users, Plus, Shield, UserCircle, Key, UserCheck, ShieldCheck, Mail, Search, Loader2, Pencil, Power } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { obtenerUsuarios, crearUsuario, ROLES } from '../services/userService';
+import { obtenerUsuarios, crearUsuario, actualizarUsuario, cambiarEstadoUsuario, ROLES } from '../services/userService';
+import { useAuth } from '../context/AuthContext';
 
 export default function UsersPage() {
+    const { user: currentUser } = useAuth();
     const [usuarios, setUsuarios] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingUser, setEditingUser] = useState<any | null>(null);
     const [formData, setFormData] = useState({
         nombreCompleto: '',
         username: '',
@@ -31,16 +34,54 @@ export default function UsersPage() {
         loadUsuarios();
     }, []);
 
+    const openCreateModal = () => {
+        setEditingUser(null);
+        setFormData({ nombreCompleto: '', username: '', password: '', rolId: 2 });
+        setIsModalOpen(true);
+    };
+
+    const openEditModal = (user: any) => {
+        setEditingUser(user);
+        setFormData({
+            nombreCompleto: user.nombreCompleto,
+            username: user.username,
+            password: '',
+            rolId: user.rolId
+        });
+        setIsModalOpen(true);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await crearUsuario(formData);
-            toast.success('Usuario creado correctamente');
+            if (editingUser) {
+                await actualizarUsuario(editingUser.usuarioId, {
+                    nombreCompleto: formData.nombreCompleto,
+                    rolId: formData.rolId,
+                    password: formData.password.trim() ? formData.password : undefined,
+                    activo: editingUser.activo
+                });
+                toast.success('Usuario actualizado correctamente');
+            } else {
+                await crearUsuario(formData);
+                toast.success('Usuario creado correctamente');
+            }
             setIsModalOpen(false);
+            setEditingUser(null);
             setFormData({ nombreCompleto: '', username: '', password: '', rolId: 2 });
             loadUsuarios();
-        } catch (error) {
-            toast.error('Error al crear usuario');
+        } catch (error: any) {
+            toast.error(error?.message || 'Error al guardar usuario');
+        }
+    };
+
+    const handleToggleActivo = async (user: any) => {
+        try {
+            await cambiarEstadoUsuario(user.usuarioId, !user.activo);
+            toast.success(`Usuario ${!user.activo ? 'activado' : 'desactivado'} correctamente`);
+            loadUsuarios();
+        } catch (error: any) {
+            toast.error(error?.message || 'Error al cambiar estado del usuario');
         }
     };
 
@@ -72,7 +113,7 @@ export default function UsersPage() {
                     </div>
 
                     <button
-                        onClick={() => setIsModalOpen(true)}
+                        onClick={openCreateModal}
                         className="bg-brand-primary-500 hover:bg-brand-primary-400 text-white px-8 py-4 rounded-2xl font-black shadow-2xl shadow-brand-primary-600/20 flex items-center gap-3 transition-all active:scale-95 uppercase tracking-widest text-xs border border-brand-primary-400/20 group"
                     >
                         <Plus size={20} strokeWidth={3} className="group-hover:rotate-90 transition-transform" />
@@ -146,8 +187,28 @@ export default function UsersPage() {
                                             <span className="text-sm font-black text-slate-200 uppercase tracking-tight">{user.rolNombre}</span>
                                         </div>
 
-                                        <div className="pt-2 flex justify-end">
-                                            <div className="h-1 w-12 bg-white/10 rounded-full group-hover:w-full group-hover:bg-brand-primary-500/20 transition-all duration-700"></div>
+                                        <div className="pt-2 flex items-center justify-end gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => openEditModal(user)}
+                                                className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-xs font-bold flex items-center gap-1.5 transition-all"
+                                            >
+                                                <Pencil size={14} />
+                                                Editar
+                                            </button>
+                                            {currentUser?.usuarioId !== user.usuarioId && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleToggleActivo(user)}
+                                                    className={`px-3 py-2 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all ${user.activo
+                                                        ? 'bg-red-500/10 hover:bg-red-500/20 text-red-400 border-red-500/20'
+                                                        : 'bg-green-500/10 hover:bg-green-500/20 text-green-400 border-green-500/20'
+                                                        }`}
+                                                >
+                                                    <Power size={14} />
+                                                    {user.activo ? 'Desactivar' : 'Activar'}
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -176,8 +237,12 @@ export default function UsersPage() {
                                         <UserCheck size={28} strokeWidth={2.5} />
                                     </div>
                                     <div>
-                                        <h2 className="text-2xl font-black text-white tracking-tight uppercase leading-none">Nuevo Usuario</h2>
-                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mt-2">Crear credenciales de acceso</p>
+                                        <h2 className="text-2xl font-black text-white tracking-tight uppercase leading-none">
+                                            {editingUser ? 'Editar Usuario' : 'Nuevo Usuario'}
+                                        </h2>
+                                        <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mt-2">
+                                            {editingUser ? 'Actualizar datos, rol o contraseña' : 'Crear credenciales de acceso'}
+                                        </p>
                                     </div>
                                 </div>
                                 <button onClick={() => setIsModalOpen(false)} className="p-3 text-gray-500 hover:text-white transition-colors bg-white/5 rounded-2xl border border-white/5">
@@ -208,9 +273,10 @@ export default function UsersPage() {
                                     </label>
                                     <input
                                         required
+                                        disabled={!!editingUser}
                                         type="text"
                                         placeholder="ej. jperez"
-                                        className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-bold"
+                                        className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-bold disabled:opacity-50"
                                         value={formData.username}
                                         onChange={e => setFormData({ ...formData, username: e.target.value })}
                                     />
@@ -219,12 +285,12 @@ export default function UsersPage() {
                                 <div className="space-y-2 group">
                                     <label className="flex items-center gap-2 text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1 group-focus-within:text-brand-primary-400 transition-colors">
                                         <Key size={12} />
-                                        Contraseña
+                                        {editingUser ? 'Nueva Contraseña (opcional)' : 'Contraseña'}
                                     </label>
                                     <input
-                                        required
+                                        required={!editingUser}
                                         type="password"
-                                        placeholder="••••••••"
+                                        placeholder={editingUser ? 'Dejar vacío para mantener actual' : '••••••••'}
                                         className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-white placeholder-gray-600 focus:outline-none focus:bg-white/10 focus:border-brand-primary-500/50 focus:ring-4 focus:ring-brand-primary-500/10 transition-all font-bold"
                                         value={formData.password}
                                         onChange={e => setFormData({ ...formData, password: e.target.value })}
@@ -251,7 +317,7 @@ export default function UsersPage() {
                                     type="submit"
                                     className="w-full bg-brand-primary-500 hover:bg-brand-primary-400 text-white px-8 py-5 rounded-3xl font-black shadow-xl shadow-brand-primary-600/20 flex items-center justify-center gap-3 transition-all active:scale-95 uppercase tracking-[0.2em] text-xs border border-brand-primary-400/20 mt-4"
                                 >
-                                    Confirmar Registro
+                                    {editingUser ? 'Guardar Cambios' : 'Confirmar Registro'}
                                 </button>
                             </form>
                         </div>
