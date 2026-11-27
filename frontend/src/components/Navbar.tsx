@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingCart, Package, LogOut, BookOpen, Users, TrendingUp, Shield, Receipt, Wallet, Truck, SlidersHorizontal } from 'lucide-react';
+import { ShoppingCart, Package, LogOut, BookOpen, Users, TrendingUp, Shield, Receipt, Wallet, Truck, SlidersHorizontal, ClipboardList } from 'lucide-react';
 import { useSession } from '../context/SessionContext';
 import { useAuth } from '../context/AuthContext';
 import { StatusBadge } from './CashControl/StatusBadge';
@@ -160,6 +160,17 @@ export default function Navbar() {
                                 >
                                     <Shield className="h-4 w-4" />
                                     Usuarios
+                                </Link>
+
+                                <Link
+                                    to="/auditoria"
+                                    className={`
+                                        flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-200 text-xs font-semibold whitespace-nowrap
+                                        ${isActive('/auditoria') ? 'bg-brand-primary-500 text-white shadow-lg shadow-brand-primary-500/30' : 'text-gray-400 hover:text-white hover:bg-gray-800/50'}
+                                    `}
+                                >
+                                    <ClipboardList className="h-4 w-4" />
+                                    Auditoría
                                 </Link>
                             </>
                         )}
